@@ -4,7 +4,7 @@ Those are the codes I've built for my thesis at Salvador University.
 
 ### What is this repository for? ###
 
-* RTS Practical Exercises
+* Thesis developed during my bachelor degree in Computer Engineering
 
 ### How do I get set up? ###
 
