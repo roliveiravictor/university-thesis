@@ -1,10 +1,10 @@
 # README #
 
-Those are the codes I've built for my thesis at Salvador University. The name of this tool is Knowledge HUB (KHUB) and its purpose is educational. The idea is to share references (knowledge) between students inside or outside the classroom, thus helping students' learning or professors' teaching.
+Those are the codes I've built for my thesis at Salvador University (UNIFACS). The name of this tool is Knowledge HUB (KHUB) and its purpose is educational. The idea is to share references (knowledge) between students inside or outside the classroom, thus helping students' learning or professors' teaching.
 
 ### What is this repository for? ###
 
-* Thesis codes developed during my bachelor degree in Computer Engineering
+* Codes for my Thesis developed during my bachelor degree in Computer Engineering
 
 ### How do I get set up? ###
 
