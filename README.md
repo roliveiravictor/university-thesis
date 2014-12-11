@@ -4,7 +4,7 @@ Those are the codes I've built for my thesis at Salvador University (UNIFACS). T
 
 ### What is this repository for? ###
 
-* Codes for my Thesis developed during my bachelor degree in Computer Engineering [### In Progress ###]
+* Codes for my Thesis developed during my bachelor degree in Computer Engineering [**In Progress**]
 
 ### How do I get set up? ###
 
