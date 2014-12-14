@@ -23,10 +23,48 @@ class KHUB : public QMainWindow
 
 public:
 	KHUB(QWidget *parent = 0);
-	~KHUB();
+
+	void createMenu();	
+	void createActions();
 
 private:
 	Ui::KHUBClass ui;
+
+	/* Menu Bar */
+	QMenu *fileMenu;
+	QMenu *groupsMenu;
+	QMenu *searchMenu;
+
+	/* File Actions */
+	QAction *exitAct;
+	QAction *logoutAct;
+
+	/* Groups Actions */
+	QAction *createGroupAct;
+	QAction *findGroupAct;
+
+	/* Search Actions */
+	QAction *newSearchAct;
+
+	/* QT C++ extension for pre-processment */
+	private slots:
+
+	/* File  Functions */
+	void logout();
+	void exit();
+
+	/* Groups  Functions */
+	void createGroup();
+	void findGroup();
+
+	/* Search Functions */
+	void newSearch();
+
+protected:
+
+	/* Events Trigger */
+	void contextMenuEvent(QContextMenuEvent *event);
+
 };
 
 #endif // KHUB_H

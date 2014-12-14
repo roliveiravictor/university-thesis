@@ -18,8 +18,15 @@
 
 int main(int argc, char *argv[])
 {
-	QApplication a(argc, argv);
-	KHUB w;
-	w.show();
-	return a.exec();
+	QApplication application(argc, argv);
+
+	KHUB mainWindow;
+	
+	//Sets main full screen and shows
+	mainWindow.setWindowState(mainWindow.windowState() ^ Qt::WindowMaximized);
+	mainWindow.createActions();
+	mainWindow.createMenu();
+	mainWindow.show();
+
+	return application.exec();
 }
