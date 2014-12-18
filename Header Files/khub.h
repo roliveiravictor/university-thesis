@@ -16,19 +16,30 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_khub.h"
+#include <stdio.h>
 
 class KHUB : public QMainWindow
 {
 	Q_OBJECT
 
 public:
+
 	KHUB(QWidget *parent = 0);
 
-	void createMenu();	
-	void createActions();
+	/* Create Screens */
+	void createLoginScreen(KHUB *loginWindow);
 
 private:
+
 	Ui::KHUBClass ui;
+
+	KHUB *mainWindow;
+
+	/* Buttons */
+	QPushButton *loginButton, *registerButton;
+
+	/* TextField */
+	QLineEdit *loginEdit, *passwordEdit;
 
 	/* Menu Bar */
 	QMenu *fileMenu;
@@ -46,8 +57,22 @@ private:
 	/* Search Actions */
 	QAction *newSearchAct;
 
+	/* Create Components */
+	void createMenu();
+	void createActions();
+
+	/* Create Screens */
+	void createMainScreen();
+	void createRegisterScreen();
+
+	/* Components Setup */
+	void buttonSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
+	void textFieldSetup(QLineEdit *textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+
 	/* QT C++ extension for pre-processment */
 	private slots:
+
+	/* Main Screen Functions */
 
 	/* File  Functions */
 	void logout();
@@ -59,6 +84,10 @@ private:
 
 	/* Search Functions */
 	void newSearch();
+
+	/* Login Screen Functions */
+	void handleLogin();
+	void handleRegister();
 
 protected:
 

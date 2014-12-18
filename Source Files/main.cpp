@@ -20,13 +20,10 @@ int main(int argc, char *argv[])
 {
 	QApplication application(argc, argv);
 
-	KHUB mainWindow;
+	KHUB loginWindow;
 	
-	//Sets main full screen and shows
-	mainWindow.setWindowState(mainWindow.windowState() ^ Qt::WindowMaximized);
-	mainWindow.createActions();
-	mainWindow.createMenu();
-	mainWindow.show();
+	loginWindow.createLoginScreen(&loginWindow);
+	loginWindow.show();
 
 	return application.exec();
 }

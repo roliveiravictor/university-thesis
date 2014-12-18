@@ -21,13 +21,51 @@ KHUB::KHUB(QWidget *parent)
 	ui.setupUi(this);
 }
 
+void KHUB::createMainScreen()
+{
+	//Sets main full screen and shows
+	mainWindow = new KHUB();
+
+	mainWindow->setWindowState(mainWindow->windowState() ^ Qt::WindowMaximized);
+
+	//Remove default empty toolbar
+	QToolBar *tb = mainWindow->findChild<QToolBar *>();
+	mainWindow->removeToolBar(tb);
+
+	mainWindow->createActions();
+	mainWindow->createMenu();
+	mainWindow->show();
+}
+
+void KHUB::createLoginScreen(KHUB *loginWindow)
+{
+	loginWindow->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	loginWindow->setFixedSize(400, 300);
+
+	//Remove default empty toolbar
+	QToolBar *tb = loginWindow->findChild<QToolBar *>();
+	loginWindow->removeToolBar(tb);
+	
+	//Buttons Setup
+	buttonSetup(&loginButton, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
+	buttonSetup(&registerButton, "Register", 225, 200, 100, 25, &KHUB::handleRegister);
+	
+	//Text Fields Setup
+	textFieldSetup(loginEdit, "KHUB - Mail", 115, 100, 200, 25, false);
+	textFieldSetup(passwordEdit, "Password", 115, 150, 200, 25, true);
+}
+
+void KHUB::createRegisterScreen()
+{
+
+}
+
 void KHUB::createMenu()
 {
 	fileMenu = menuBar()->addMenu(tr("&File"));
 
 	fileMenu->addAction(exitAct);
 	fileMenu->addAction(logoutAct);
-
 	
 	groupsMenu = menuBar()->addMenu(tr("&Groups"));
 
@@ -45,7 +83,7 @@ void KHUB::contextMenuEvent(QContextMenuEvent *event)
 	QMenu menu(this);
 }
 
-//Events handler
+//Actions Handler
 void KHUB::createActions()
 {
 	/* Files Handler*/
@@ -86,4 +124,38 @@ void KHUB::findGroup()
 void KHUB::newSearch()
 {
 
+}
+
+//Listeners
+void KHUB::handleLogin()
+{
+	loginButton->setText("Working");
+	createMainScreen();
+}
+
+void KHUB::handleRegister()
+{
+	registerButton->setText("Works");
+	createMainScreen();
+}
+
+//Code Reuse
+void KHUB::buttonSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)())
+{
+	*button = new QPushButton(name, this);
+	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+
+	//Event Listener
+	connect(*button, &QPushButton::released, this, fptr);
+}
+
+void KHUB::textFieldSetup(QLineEdit *textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)
+{
+	textField = new QLineEdit("", this);
+	textField->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+	textField->setAlignment(Qt::AlignHCenter);
+	textField->setPlaceholderText(hint);
+
+	if (isPassword)
+		textField->setEchoMode(passwordEdit->Password);
 }
