@@ -33,29 +33,29 @@ private:
 
 	Ui::KHUBClass ui;
 
-	KHUB *mainWindow;
+	KHUB* mainWindow;
 
 	/* Buttons */
-	QPushButton *loginButton, *registerButton;
+	QPushButton* loginButton, *registerButton;
 
 	/* TextField */
-	QLineEdit *loginEdit, *passwordEdit;
+	QLineEdit* loginEdit, *passwordEdit;
 
 	/* Menu Bar */
-	QMenu *fileMenu;
-	QMenu *groupsMenu;
-	QMenu *searchMenu;
+	QMenu* fileMenu;
+	QMenu* groupsMenu;
+	QMenu* searchMenu;
 
 	/* File Actions */
-	QAction *exitAct;
-	QAction *logoutAct;
+	QAction* exitAct;
+	QAction* logoutAct;
 
 	/* Groups Actions */
-	QAction *createGroupAct;
-	QAction *findGroupAct;
+	QAction* createGroupAct;
+	QAction* findGroupAct;
 
 	/* Search Actions */
-	QAction *newSearchAct;
+	QAction* newSearchAct;
 
 	/* Create Components */
 	void createMenu();
@@ -66,8 +66,8 @@ private:
 	void createRegisterScreen();
 
 	/* Components Setup */
-	void buttonSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
-	void textFieldSetup(QLineEdit *textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+	void buttonSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
+	void textFieldSetup(QLineEdit* textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
 
 	/* QT C++ extension for pre-processment */
 	private slots:

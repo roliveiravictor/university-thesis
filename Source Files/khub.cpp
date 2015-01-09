@@ -14,6 +14,7 @@
 
 #include "stdafx.h"
 #include "khub.h"
+#include "database.h"
 
 KHUB::KHUB(QWidget *parent)
 	: QMainWindow(parent)
@@ -29,7 +30,7 @@ void KHUB::createMainScreen()
 	mainWindow->setWindowState(mainWindow->windowState() ^ Qt::WindowMaximized);
 
 	//Remove default empty toolbar
-	QToolBar *tb = mainWindow->findChild<QToolBar *>();
+	QToolBar* tb = mainWindow->findChild<QToolBar *>();
 	mainWindow->removeToolBar(tb);
 
 	mainWindow->createActions();
@@ -43,7 +44,7 @@ void KHUB::createLoginScreen(KHUB *loginWindow)
 	loginWindow->setFixedSize(400, 300);
 
 	//Remove default empty toolbar
-	QToolBar *tb = loginWindow->findChild<QToolBar *>();
+	QToolBar* tb = loginWindow->findChild<QToolBar *>();
 	loginWindow->removeToolBar(tb);
 	
 	//Buttons Setup
@@ -129,14 +130,15 @@ void KHUB::newSearch()
 //Listeners
 void KHUB::handleLogin()
 {
-	loginButton->setText("Working");
 	createMainScreen();
+
+	Database database;
+	database.query();
 }
 
 void KHUB::handleRegister()
 {
-	registerButton->setText("Works");
-	createMainScreen();
+	//createMainScreen();
 }
 
 //Code Reuse
