@@ -17,6 +17,8 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_khub.h"
 #include <stdio.h>
+#include <sql.h>
+#include <http.h>
 
 class KHUB : public QMainWindow
 {

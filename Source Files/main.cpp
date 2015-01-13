@@ -13,6 +13,7 @@
 
 
 #include "stdafx.h"
+
 #include "khub.h"
 #include <QtWidgets/QApplication>
 

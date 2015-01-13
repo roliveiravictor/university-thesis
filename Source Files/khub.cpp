@@ -13,8 +13,9 @@
 
 
 #include "stdafx.h"
+
 #include "khub.h"
-#include "database.h"
+
 
 KHUB::KHUB(QWidget *parent)
 	: QMainWindow(parent)
@@ -132,13 +133,16 @@ void KHUB::handleLogin()
 {
 	createMainScreen();
 
-	Database database;
-	database.query();
+	SQL databaseConnection;
+	databaseConnection.Query();
 }
 
 void KHUB::handleRegister()
 {
 	//createMainScreen();
+	HTTP request;
+
+	request.SendRequest();
 }
 
 //Code Reuse

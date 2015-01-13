@@ -11,8 +11,8 @@
 /*                                                                    */
 /**********************************************************************/
 
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef sql_H
+#define sql_H
 
 /* Standard C++ includes */
 #include <stdlib.h>
@@ -28,18 +28,18 @@
 
 using namespace std;
 
-class Database
+class SQL
 {
 
 public:
 
-	Database();
+	SQL();
 	
-	void query();
+	void Query();
 
 private:
 
-	//Map to acquire database credential locally
+	//Map to acquire sql credential locally
 	map <int, string> dbAccess;
 
 	sql::Driver* driver;
@@ -47,9 +47,9 @@ private:
 	sql::Statement* stmt;
 	sql::ResultSet* res;
 
-	void databaseAccess();
+	void DatabaseAccess();
 
 };
 
 
-#endif // DATABASE_H
+#endif // sql_H

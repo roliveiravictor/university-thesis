@@ -12,20 +12,20 @@
 /**********************************************************************/
 
 #include "stdafx.h"
-#include <database.h>
+#include <sql.h>
 
-Database::Database()
+SQL::SQL()
 {
 	try
 	{
-		//Acquire database credential
-		databaseAccess();
+		//Acquire sql credential
+		DatabaseAccess();
 
 		//Create a connection
 		driver = get_driver_instance();
 		con = driver->connect(dbAccess[0].data(), dbAccess[1].data(), dbAccess[2].data());
 
-		///Connect to the MySQL test database
+		///Connect to the MySQL test sql
 		con->setSchema("mycrawler");
 	}
 		catch (sql::SQLException &e) 
@@ -36,7 +36,7 @@ Database::Database()
 		}
 }
 
-void Database::query()
+void SQL::Query()
 {
 	try
 	{
@@ -62,7 +62,7 @@ void Database::query()
 }
 
 //Open local file and gets credential
-void Database::databaseAccess()
+void SQL::DatabaseAccess()
 {
 	int counter = 0;
 	string line;
