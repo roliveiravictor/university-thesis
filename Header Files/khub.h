@@ -16,9 +16,11 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_khub.h"
+#include "sql.h"
+#include "http.h"
+
+#include <cstdlib>
 #include <stdio.h>
-#include <sql.h>
-#include <http.h>
 
 class KHUB : public QMainWindow
 {
@@ -35,26 +37,22 @@ private:
 
 	Ui::KHUBClass ui;
 
-	KHUB* mainWindow;
+	KHUB* mainWindow, *loginWindowPtr;
 
 	/* Buttons */
-	QPushButton* loginButton, *registerButton;
+	QPushButton* loginButton, *registerButton, *cancelButton;
 
 	/* TextField */
-	QLineEdit* loginEdit, *passwordEdit;
+	QLineEdit* loginEdit, *passwordEdit, *loginConfirmEdit, *passwordConfirmEdit;
 
 	/* Menu Bar */
-	QMenu* fileMenu;
-	QMenu* groupsMenu;
-	QMenu* searchMenu;
+	QMenu* fileMenu, *groupsMenu, *searchMenu;
 
 	/* File Actions */
-	QAction* exitAct;
-	QAction* logoutAct;
+	QAction* exitAct, *logoutAct;
 
 	/* Groups Actions */
-	QAction* createGroupAct;
-	QAction* findGroupAct;
+	QAction* createGroupAct, *findGroupAct;
 
 	/* Search Actions */
 	QAction* newSearchAct;
@@ -69,16 +67,16 @@ private:
 
 	/* Components Setup */
 	void buttonSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
-	void textFieldSetup(QLineEdit* textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+	void textFieldSetup(QLineEdit** textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
 
-	/* QT C++ extension for pre-processment */
-	private slots:
+/* QT C++ extension for pre-processment */
+private slots:
 
 	/* Main Screen Functions */
-
-	/* File  Functions */
-	void logout();
+	
+	/* File Functions */
 	void exit();
+	void logout();
 
 	/* Groups  Functions */
 	void createGroup();
@@ -88,14 +86,9 @@ private:
 	void newSearch();
 
 	/* Login Screen Functions */
+	void handleCancel();
 	void handleLogin();
 	void handleRegister();
-
-protected:
-
-	/* Events Trigger */
-	void contextMenuEvent(QContextMenuEvent *event);
-
 };
 
 #endif // KHUB_H

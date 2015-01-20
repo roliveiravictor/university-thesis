@@ -14,8 +14,9 @@
 
 #include "stdafx.h"
 
-#include "khub.h"
 #include <QtWidgets/QApplication>
+#include "khub.h"
+
 
 int main(int argc, char *argv[])
 {

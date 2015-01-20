@@ -12,14 +12,14 @@
 /**********************************************************************/
 
 #include "stdafx.h"
-#include <sql.h>
+#include "sql.h"
 
 SQL::SQL()
 {
 	try
 	{
 		//Acquire sql credential
-		DatabaseAccess();
+		databaseAccess();
 
 		//Create a connection
 		driver = get_driver_instance();
@@ -36,7 +36,12 @@ SQL::SQL()
 		}
 }
 
-void SQL::Query()
+bool SQL::checkCredentials()
+{
+	return false;
+}
+
+void SQL::query()
 {
 	try
 	{
@@ -62,7 +67,7 @@ void SQL::Query()
 }
 
 //Open local file and gets credential
-void SQL::DatabaseAccess()
+void SQL::databaseAccess()
 {
 	int counter = 0;
 	string line;

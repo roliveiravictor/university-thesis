@@ -14,17 +14,17 @@
 #ifndef sql_H
 #define sql_H
 
-/* Standard C++ includes */
-#include <stdlib.h>
-#include <iostream>
-#include <fstream>
-
 /* C++ Connect Libraries from MySQL */
 #include "mysql_connection.h"
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
+
+/* Standard C++ includes */
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -35,7 +35,8 @@ public:
 
 	SQL();
 	
-	void Query();
+	void query();
+	bool checkCredentials();
 
 private:
 
@@ -47,7 +48,7 @@ private:
 	sql::Statement* stmt;
 	sql::ResultSet* res;
 
-	void DatabaseAccess();
+	void databaseAccess();
 
 };
 

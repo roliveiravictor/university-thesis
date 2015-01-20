@@ -32,7 +32,7 @@ void KHUB::createMainScreen()
 
 	//Remove default empty toolbar
 	QToolBar* tb = mainWindow->findChild<QToolBar *>();
-	mainWindow->removeToolBar(tb);
+		mainWindow->removeToolBar(tb);
 
 	mainWindow->createActions();
 	mainWindow->createMenu();
@@ -46,51 +46,60 @@ void KHUB::createLoginScreen(KHUB *loginWindow)
 
 	//Remove default empty toolbar
 	QToolBar* tb = loginWindow->findChild<QToolBar *>();
-	loginWindow->removeToolBar(tb);
+		loginWindow->removeToolBar(tb);
 	
 	//Buttons Setup
 	buttonSetup(&loginButton, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
 	buttonSetup(&registerButton, "Register", 225, 200, 100, 25, &KHUB::handleRegister);
 	
 	//Text Fields Setup
-	textFieldSetup(loginEdit, "KHUB - Mail", 115, 100, 200, 25, false);
-	textFieldSetup(passwordEdit, "Password", 115, 150, 200, 25, true);
+	textFieldSetup(&loginEdit, "KHUB E-mail", 115, 100, 200, 25, false);
+	textFieldSetup(&passwordEdit, "Password", 115, 150, 200, 25, true);
+
+	loginWindowPtr = loginWindow;
 }
 
 void KHUB::createRegisterScreen()
-{
+{	
+	setFixedSize(400, 400);
 
+	loginButton->close();
+	registerButton->close();
+
+	//Buttons Setup
+	buttonSetup(&cancelButton, "Cancel", 225, 300, 100, 25, &KHUB::handleCancel);
+	buttonSetup(&registerButton, "Register", 100, 300, 100, 25, &KHUB::handleRegister);
+
+	//Text Fields Setup
+	textFieldSetup(&loginEdit, "KHUB E-mail", 115, 100, 200, 25, false);
+	textFieldSetup(&loginConfirmEdit, "Confirm E-mail", 115, 150, 200, 25, false);
+	textFieldSetup(&passwordEdit, "Password", 115, 200, 200, 25, true);
+	textFieldSetup(&passwordConfirmEdit, "Confirm Password", 115, 250, 200, 25, true);
 }
 
 void KHUB::createMenu()
 {
 	fileMenu = menuBar()->addMenu(tr("&File"));
-
-	fileMenu->addAction(exitAct);
-	fileMenu->addAction(logoutAct);
+		fileMenu->addAction(logoutAct);
+		fileMenu->addAction(exitAct);
 	
 	groupsMenu = menuBar()->addMenu(tr("&Groups"));
-
-	groupsMenu->addAction(createGroupAct);
-	groupsMenu->addAction(findGroupAct);
+		groupsMenu->addAction(createGroupAct);
+		groupsMenu->addAction(findGroupAct);
 
 	searchMenu = menuBar()->addMenu(tr("&Search"));
-
-	searchMenu->addAction(newSearchAct);
-}
-
-//Events listener
-void KHUB::contextMenuEvent(QContextMenuEvent *event)
-{
-	QMenu menu(this);
+		searchMenu->addAction(newSearchAct);
 }
 
 //Actions Handler
 void KHUB::createActions()
 {
 	/* Files Handler*/
-	exitAct = new QAction(tr("&Exit"), this);
 	logoutAct = new QAction(tr("&Logout"), this);
+	exitAct = new QAction(tr("&Exit"), this);
+
+	connect(exitAct, SIGNAL(triggered()), this, SLOT(exit()));
+	connect(logoutAct, SIGNAL(triggered()), this, SLOT(logout()));
 
 	/* Groups Handler */
 	createGroupAct = new QAction(tr("&CreateGroup"), this);
@@ -103,12 +112,14 @@ void KHUB::createActions()
 //File Functions
 void KHUB::exit()
 {
-
+	QApplication::quit();
 }
 
 void KHUB::logout()
 {
-
+	//Restart
+	qApp->quit();
+	QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
 }
 
 //Groups Functions
@@ -129,20 +140,38 @@ void KHUB::newSearch()
 }
 
 //Listeners
+void KHUB::handleCancel()
+{	
+	loginWindowPtr->close();
+
+	loginWindowPtr = new KHUB();
+		loginWindowPtr->createLoginScreen(loginWindowPtr);
+		loginWindowPtr->show();
+}
+
 void KHUB::handleLogin()
 {
-	createMainScreen();
+	loginWindowPtr->close();
+	
+	loginWindowPtr = NULL;
+		delete loginWindowPtr;
 
 	SQL databaseConnection;
-	databaseConnection.Query();
+	
+	if (databaseConnection.checkCredentials())
+		createMainScreen();
+	else
+		qDebug() << "falhou";
 }
 
 void KHUB::handleRegister()
 {
-	//createMainScreen();
-	HTTP request;
+	loginWindowPtr->hide();
 
-	request.SendRequest();
+	createRegisterScreen();
+
+	loginWindowPtr->repaint();
+	loginWindowPtr->show();
 }
 
 //Code Reuse
@@ -155,13 +184,13 @@ void KHUB::buttonSetup(QPushButton **button, const QString name, int posX, int p
 	connect(*button, &QPushButton::released, this, fptr);
 }
 
-void KHUB::textFieldSetup(QLineEdit *textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)
+void KHUB::textFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)
 {
-	textField = new QLineEdit("", this);
-	textField->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
-	textField->setAlignment(Qt::AlignHCenter);
-	textField->setPlaceholderText(hint);
+	*textField = new QLineEdit("", this);
+	(*textField)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+	(*textField)->setAlignment(Qt::AlignHCenter);
+	(*textField)->setPlaceholderText(hint);
 
 	if (isPassword)
-		textField->setEchoMode(passwordEdit->Password);
+		(*textField)->setEchoMode(passwordEdit->Password);
 }
