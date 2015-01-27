@@ -14,6 +14,10 @@
 #ifndef sql_H
 #define sql_H
 
+#include <QSqlQuery>
+#include <QSqlError>
+
+
 /* C++ Connect Libraries from MySQL */
 #include "mysql_connection.h"
 #include <cppconn/driver.h>
@@ -35,18 +39,14 @@ public:
 
 	SQL();
 	
-	void query();
-	bool checkCredentials();
+	bool checkCredentials(QString login, QString password);
 
 private:
 
 	//Map to acquire sql credential locally
 	map <int, string> dbAccess;
 
-	sql::Driver* driver;
-	sql::Connection* con;
-	sql::Statement* stmt;
-	sql::ResultSet* res;
+	QSqlDatabase database;
 
 	void databaseAccess();
 

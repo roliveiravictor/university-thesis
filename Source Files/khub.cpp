@@ -158,20 +158,29 @@ void KHUB::handleLogin()
 
 	SQL databaseConnection;
 	
-	if (databaseConnection.checkCredentials())
+	if (databaseConnection.checkCredentials(loginEdit->text(), passwordEdit->text()))
 		createMainScreen();
 	else
-		qDebug() << "falhou";
+		qDebug() << "Database connection request failed.";
 }
 
 void KHUB::handleRegister()
 {
-	loginWindowPtr->hide();
 
-	createRegisterScreen();
+	if (false)
+	{
 
-	loginWindowPtr->repaint();
-	loginWindowPtr->show();
+	}
+	else
+	{
+		loginWindowPtr->hide();
+
+		createRegisterScreen();
+
+		loginWindowPtr->repaint();
+		loginWindowPtr->show();
+	}
+	
 }
 
 //Code Reuse

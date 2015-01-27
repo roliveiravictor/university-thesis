@@ -1,4 +1,4 @@
-﻿v/**********************************************************************/
+﻿/**********************************************************************/
 /*                                                                    */
 /*         Subject: KHUB Thesis										  */
 /*		   Author: Victor Rocha                                       */
@@ -21,12 +21,20 @@ SQL::SQL()
 		//Acquire sql credential
 		databaseAccess();
 
-		//Create a connection
-		driver = get_driver_instance();
-		con = driver->connect(dbAccess[0].data(), dbAccess[1].data(), dbAccess[2].data());
-
-		///Connect to the MySQL test sql
-		con->setSchema("mycrawler");
+		database = QSqlDatabase::addDatabase("QMYSQL");
+		
+		//Set relevant settings
+		database.setHostName(dbAccess[0].data());
+		database.setPort(atoi(dbAccess[1].data()));
+		database.setDatabaseName(dbAccess[2].data());
+		database.setUserName(dbAccess[3].data());
+		database.setPassword(dbAccess[4].data());
+		
+		//Open the database
+		if (!database.open()) 
+		{
+			QMessageBox::critical(0, QObject::tr("Database Error"), database.lastError().text());
+		}
 	}
 		catch (sql::SQLException &e) 
 		{
@@ -36,34 +44,27 @@ SQL::SQL()
 		}
 }
 
-bool SQL::checkCredentials()
-{
-	return false;
-}
-
-void SQL::query()
+bool SQL::checkCredentials(QString login, QString password)
 {
 	try
 	{
-		stmt = con->createStatement();
-		res = stmt->executeQuery("SELECT servidor FROM rag");
+		QSqlQuery query;
+		query.prepare("SELECT user_name from users where user_name ='" + login + "'");
+		query.exec();
 
-		while (res->next())
-		{
-			//Access column fata by numeric offset, 1 is the first column or set column name as string parameter
-			cout << res->getString(1).c_str() << endl;
-		}
+		if (query.size() != 0)
+			return true;
+		else
+			return false;
 	}
 		catch (sql::SQLException &e)
 		{
 			cout << "# ERR: SQLException in " << __FILE__;
 			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << "# ERR: " << e.what();
-		}
 
-	delete res;
-	delete stmt;
-	delete con;
+			return false;
+		}
 }
 
 //Open local file and gets credential
@@ -85,3 +86,5 @@ void SQL::databaseAccess()
 		else
 			cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
 }
+
+//# INSERT ? INSERT INTO users(user_name, user_password) VALUES('victor', 'roliveira');
