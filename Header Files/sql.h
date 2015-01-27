@@ -30,6 +30,8 @@
 #include <iostream>
 #include <fstream>
 
+#define KHUB_CONNECTION "khub connection"
+
 using namespace std;
 
 class SQL
@@ -45,8 +47,6 @@ private:
 
 	//Map to acquire sql credential locally
 	map <int, string> dbAccess;
-
-	QSqlDatabase database;
 
 	void databaseAccess();
 

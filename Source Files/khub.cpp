@@ -151,17 +151,20 @@ void KHUB::handleCancel()
 
 void KHUB::handleLogin()
 {
-	loginWindowPtr->close();
-	
-	loginWindowPtr = NULL;
-		delete loginWindowPtr;
-
 	SQL databaseConnection;
 	
 	if (databaseConnection.checkCredentials(loginEdit->text(), passwordEdit->text()))
+	{
+		loginWindowPtr->close();
+
+		loginWindowPtr = NULL;
+		delete loginWindowPtr;
+
 		createMainScreen();
+	}
+		
 	else
-		qDebug() << "Database connection request failed.";
+		qDebug() << "Failed to login";
 }
 
 void KHUB::handleRegister()

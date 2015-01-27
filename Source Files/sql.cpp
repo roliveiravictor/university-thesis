@@ -21,7 +21,7 @@ SQL::SQL()
 		//Acquire sql credential
 		databaseAccess();
 
-		database = QSqlDatabase::addDatabase("QMYSQL");
+		QSqlDatabase database = QSqlDatabase::addDatabase("QMYSQL", KHUB_CONNECTION);
 		
 		//Set relevant settings
 		database.setHostName(dbAccess[0].data());
@@ -41,6 +41,9 @@ SQL::SQL()
 			cout << "# ERR: SQLException in " << __FILE__;
 			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << "# ERR: " << e.what();
+
+
+			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 		}
 }
 
@@ -48,20 +51,31 @@ bool SQL::checkCredentials(QString login, QString password)
 {
 	try
 	{
-		QSqlQuery query;
-		query.prepare("SELECT user_name from users where user_name ='" + login + "'");
+		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+		
+		query.prepare("SELECT user_name FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
 		query.exec();
 
 		if (query.size() != 0)
 			return true;
 		else
+		{
+			QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
+
+			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+
 			return false;
+		}
+			
 	}
 		catch (sql::SQLException &e)
 		{
 			cout << "# ERR: SQLException in " << __FILE__;
 			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << "# ERR: " << e.what();
+
+
+			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
 			return false;
 		}
@@ -83,8 +97,8 @@ void SQL::databaseAccess()
 		}
 		configFile.close();
 	}
-		else
-			cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
+	else
+		cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
 }
 
 //# INSERT ? INSERT INTO users(user_name, user_password) VALUES('victor', 'roliveira');
