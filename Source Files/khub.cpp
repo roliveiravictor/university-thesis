@@ -23,6 +23,10 @@ KHUB::KHUB(QWidget *parent)
 	ui.setupUi(this);
 }
 
+/*****************/
+/* Screens Setup */
+/*****************/
+
 void KHUB::createMainScreen()
 {
 	//Sets main full screen and shows
@@ -41,19 +45,18 @@ void KHUB::createMainScreen()
 
 void KHUB::createLoginScreen(KHUB *loginWindow)
 {
+	signalMapper = new QSignalMapper(this);
+
 	loginWindow->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
 	loginWindow->setFixedSize(400, 300);
 
-	//Remove default empty toolbar
 	QToolBar* tb = loginWindow->findChild<QToolBar *>();
 		loginWindow->removeToolBar(tb);
 	
-	//Buttons Setup
 	buttonSetup(&loginButton, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
-	buttonSetup(&registerButton, "Register", 225, 200, 100, 25, &KHUB::handleRegister);
+	buttonSetupInt(&registerButton, "Register", 225, 200, 100, 25, &KHUB::handleRegister, 0);
 	
-	//Text Fields Setup
-	textFieldSetup(&loginEdit, "KHUB E-mail", 115, 100, 200, 25, false);
+	textFieldSetup(&loginEdit, "KHUB Username", 115, 100, 200, 25, false);
 	textFieldSetup(&passwordEdit, "Password", 115, 150, 200, 25, true);
 
 	loginWindowPtr = loginWindow;
@@ -66,13 +69,11 @@ void KHUB::createRegisterScreen()
 	loginButton->close();
 	registerButton->close();
 
-	//Buttons Setup
 	buttonSetup(&cancelButton, "Cancel", 225, 300, 100, 25, &KHUB::handleCancel);
-	buttonSetup(&registerButton, "Register", 100, 300, 100, 25, &KHUB::handleRegister);
+	buttonSetupInt(&registerButton, "Register", 100, 300, 100, 25, &KHUB::handleRegister, 1);
 
-	//Text Fields Setup
-	textFieldSetup(&loginEdit, "KHUB E-mail", 115, 100, 200, 25, false);
-	textFieldSetup(&loginConfirmEdit, "Confirm E-mail", 115, 150, 200, 25, false);
+	textFieldSetup(&loginEdit, "KHUB Username", 115, 100, 200, 25, false);
+	textFieldSetup(&loginConfirmEdit, "Confirm Username", 115, 150, 200, 25, false);
 	textFieldSetup(&passwordEdit, "Password", 115, 200, 200, 25, true);
 	textFieldSetup(&passwordConfirmEdit, "Confirm Password", 115, 250, 200, 25, true);
 }
@@ -91,21 +92,24 @@ void KHUB::createMenu()
 		searchMenu->addAction(newSearchAct);
 }
 
-//Actions Handler
+/*******************/
+/* Actions Handler */
+/*******************/
+
 void KHUB::createActions()
 {
-	/* Files Handler*/
+	//Files Handler
 	logoutAct = new QAction(tr("&Logout"), this);
 	exitAct = new QAction(tr("&Exit"), this);
 
 	connect(exitAct, SIGNAL(triggered()), this, SLOT(exit()));
 	connect(logoutAct, SIGNAL(triggered()), this, SLOT(logout()));
 
-	/* Groups Handler */
+	//Groups Handler
 	createGroupAct = new QAction(tr("&CreateGroup"), this);
 	findGroupAct = new QAction(tr("&FindGroup"), this);
 
-	/* Search Handler */
+	//Search Handler
 	newSearchAct = new QAction(tr("&NewSearch"), this);
 }
 
@@ -139,7 +143,11 @@ void KHUB::newSearch()
 
 }
 
-//Listeners
+/*************/
+/* Listeners */
+/*************/
+
+//Restart login screen
 void KHUB::handleCancel()
 {	
 	loginWindowPtr->close();
@@ -149,6 +157,7 @@ void KHUB::handleCancel()
 		loginWindowPtr->show();
 }
 
+//Close login screen if credentials are good to go and free resources
 void KHUB::handleLogin()
 {
 	SQL databaseConnection;
@@ -167,12 +176,37 @@ void KHUB::handleLogin()
 		qDebug() << "Failed to login";
 }
 
-void KHUB::handleRegister()
+//Handle register for screen opening or new user 
+void KHUB::handleRegister(int isRegister)
 {
 
-	if (false)
+	if (isRegister)
 	{
+		qDebug() << loginEdit->text() + " " + loginConfirmEdit->text() + " " + passwordEdit->text() + " " + passwordConfirmEdit->text();
 
+		if (!QString::compare(loginEdit->text(), loginConfirmEdit->text()))
+		{
+			if(!QString::compare(passwordEdit->text(), passwordConfirmEdit->text(), Qt::CaseInsensitive))
+			{
+				SQL databaseConnection;
+					
+				if (!databaseConnection.checkUser(loginEdit->text()))
+				{
+					databaseConnection.registerUser(loginEdit->text(), passwordEdit->text());
+
+					//After register go back to login screen - recreate it
+					emit handleCancel();
+				}
+				else
+					QMessageBox::warning(0, QObject::tr("Warning"), "Username already exists. Please try again.");
+			}
+			else
+			{
+				QMessageBox::warning(0, QObject::tr("Warning"), "Your password information does not match. Please try again.");
+			}
+		}
+		else
+			QMessageBox::warning(0, QObject::tr("Warning"), "Your login information does not match. Please try again.");
 	}
 	else
 	{
@@ -186,14 +220,30 @@ void KHUB::handleRegister()
 	
 }
 
-//Code Reuse
-void KHUB::buttonSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)())
+/**************/
+/* Code Reuse */
+/**************/
+
+void KHUB::buttonSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)())
 {
 	*button = new QPushButton(name, this);
 	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
 	//Event Listener
 	connect(*button, &QPushButton::released, this, fptr);
+}
+
+void KHUB::buttonSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value)
+{
+	*button = new QPushButton(name, this);
+	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+
+	connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
+	signalMapper->setMapping(*button, value);
+
+	connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)));
+	//connect(signalMapper, SIGNAL(mapped(int)), this, fptr);
+
 }
 
 void KHUB::textFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)

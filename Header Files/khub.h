@@ -67,7 +67,11 @@ private:
 
 	/* Components Setup */
 	void buttonSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
+	void buttonSetupInt(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value);
 	void textFieldSetup(QLineEdit** textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+
+	/* Signal map for different senders */
+	QSignalMapper* signalMapper;
 
 /* QT C++ extension for pre-processment */
 private slots:
@@ -88,7 +92,8 @@ private slots:
 	/* Login Screen Functions */
 	void handleCancel();
 	void handleLogin();
-	void handleRegister();
+	void handleRegister(int isRegister);
+
 };
 
 #endif // KHUB_H

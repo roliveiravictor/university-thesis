@@ -41,15 +41,20 @@ public:
 
 	SQL();
 	
+	/* Login Control */
 	bool checkCredentials(QString login, QString password);
+
+	/* Register Control */
+	void registerUser(QString login, QString password);
+	bool checkUser(QString login);
 
 private:
 
-	//Map to acquire sql credential locally
+	/* Map to acquire sql credential locally */
 	map <int, string> dbAccess;
-
+	
+	/* Local config file with DB access information */
 	void databaseAccess();
-
 };
 
 

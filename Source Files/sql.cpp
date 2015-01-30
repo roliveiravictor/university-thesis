@@ -47,10 +47,16 @@ SQL::SQL()
 		}
 }
 
+/*****************/
+/* Login Control */
+/*****************/
+
+//Check and confirm login information
 bool SQL::checkCredentials(QString login, QString password)
 {
 	try
 	{
+		//Building QSqlQuery object and passing database setup
 		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
 		query.prepare("SELECT user_name FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
@@ -62,6 +68,8 @@ bool SQL::checkCredentials(QString login, QString password)
 		{
 			QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
 
+			//Closing Database
+			query.clear();
 			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
 			return false;
@@ -80,6 +88,36 @@ bool SQL::checkCredentials(QString login, QString password)
 			return false;
 		}
 }
+
+//Check if user exists
+bool SQL::checkUser(QString login)
+{
+	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+
+	query.prepare("SELECT user_name FROM users where user_name ='" + login + "'");
+	query.exec();
+
+	if (query.size() != 0)
+		return true;
+	else
+		return false;
+}
+
+//Apply for new user
+void SQL::registerUser(QString login, QString password)
+{
+	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+
+	query.prepare("INSERT INTO users(user_name, user_password) VALUES('" + login + "', '" + password + "')");
+	query.exec();
+	query.clear();
+
+	QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+}
+
+/**********************/
+/* Local Information  */
+/**********************/
 
 //Open local file and gets credential
 void SQL::databaseAccess()
@@ -100,5 +138,3 @@ void SQL::databaseAccess()
 	else
 		cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
 }
-
-//# INSERT ? INSERT INTO users(user_name, user_password) VALUES('victor', 'roliveira');
