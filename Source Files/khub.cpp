@@ -78,6 +78,25 @@ void KHUB::createRegisterScreen()
 	textFieldSetup(&passwordConfirmEdit, "Confirm Password", 115, 250, 200, 25, true);
 }
 
+void KHUB::createGroupScreen()
+{
+	groupScreen = new QWidget();
+
+	groupScreen->setWindowState(groupScreen->windowState() ^ Qt::WindowMaximized);
+	//groupScreen->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	groupScreen->setWindowTitle("New Group");
+	groupScreen->setWindowModality(Qt::ApplicationModal);
+	//groupScreen->setFixedSize(400, 300);
+
+	QLineEdit* groupName, *groupCategory, *groupSubject;
+	QPushButton* createBt, *cancelBt;	
+
+	createBt = new QPushButton("Create");
+	createBt->setGeometry(QRect(QPoint(100, 100), QSize(100, 100)));
+
+
+}
+
 void KHUB::createMenu()
 {
 	fileMenu = menuBar()->addMenu(tr("&File"));
@@ -109,6 +128,8 @@ void KHUB::createActions()
 	createGroupAct = new QAction(tr("&CreateGroup"), this);
 	findGroupAct = new QAction(tr("&FindGroup"), this);
 
+	connect(createGroupAct, SIGNAL(triggered()), this, SLOT(createGroup()));
+
 	//Search Handler
 	newSearchAct = new QAction(tr("&NewSearch"), this);
 }
@@ -129,7 +150,9 @@ void KHUB::logout()
 //Groups Functions
 void KHUB::createGroup()
 {
+	createGroupScreen();
 
+	groupScreen->show();
 }
 
 void KHUB::findGroup()
@@ -162,7 +185,9 @@ void KHUB::handleLogin()
 {
 	SQL databaseConnection;
 	
-	if (databaseConnection.checkCredentials(loginEdit->text(), passwordEdit->text()))
+	//DEBUG LOGIN PASS
+	//if (databaseConnection.checkCredentials(loginEdit->text(), passwordEdit->text()))
+	if (databaseConnection.checkCredentials("victor1234", "gogo"))
 	{
 		loginWindowPtr->close();
 
@@ -182,8 +207,6 @@ void KHUB::handleRegister(int isRegister)
 
 	if (isRegister)
 	{
-		qDebug() << loginEdit->text() + " " + loginConfirmEdit->text() + " " + passwordEdit->text() + " " + passwordConfirmEdit->text();
-
 		if (!QString::compare(loginEdit->text(), loginConfirmEdit->text()))
 		{
 			if(!QString::compare(passwordEdit->text(), passwordConfirmEdit->text(), Qt::CaseInsensitive))
@@ -229,7 +252,7 @@ void KHUB::buttonSetup(QPushButton **button, const QString name, int posX, int p
 	*button = new QPushButton(name, this);
 	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
-	//Event Listener
+	//Connecting Listener
 	connect(*button, &QPushButton::released, this, fptr);
 }
 
@@ -242,8 +265,6 @@ void KHUB::buttonSetupInt(QPushButton **button, const QString name, int posX, in
 	signalMapper->setMapping(*button, value);
 
 	connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)));
-	//connect(signalMapper, SIGNAL(mapped(int)), this, fptr);
-
 }
 
 void KHUB::textFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)

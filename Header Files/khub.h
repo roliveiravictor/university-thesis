@@ -37,7 +37,10 @@ private:
 
 	Ui::KHUBClass ui;
 
+	/* Screens */
 	KHUB* mainWindow, *loginWindowPtr;
+
+	QWidget* groupScreen;
 
 	/* Buttons */
 	QPushButton* loginButton, *registerButton, *cancelButton;
@@ -64,6 +67,7 @@ private:
 	/* Create Screens */
 	void createMainScreen();
 	void createRegisterScreen();
+	void createGroupScreen();
 
 	/* Components Setup */
 	void buttonSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
