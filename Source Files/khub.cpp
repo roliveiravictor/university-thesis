@@ -31,8 +31,7 @@ void KHUB::createMainScreen()
 {
 	//Sets main full screen and shows
 	mainWindow = new KHUB();
-
-	mainWindow->setWindowState(mainWindow->windowState() ^ Qt::WindowMaximized);
+		mainWindow->setWindowState(mainWindow->windowState() ^ Qt::WindowMaximized);
 
 	//Remove default empty toolbar
 	QToolBar* tb = mainWindow->findChild<QToolBar *>();
@@ -53,11 +52,11 @@ void KHUB::createLoginScreen(KHUB *loginWindow)
 	QToolBar* tb = loginWindow->findChild<QToolBar *>();
 		loginWindow->removeToolBar(tb);
 	
-	buttonSetup(&loginButton, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
-	buttonSetupInt(&registerButton, "Register", 225, 200, 100, 25, &KHUB::handleRegister, 0);
+	btSetup(&loginBt, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
+	btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, FALSE);
 	
-	textFieldSetup(&loginEdit, "KHUB Username", 115, 100, 200, 25, false);
-	textFieldSetup(&passwordEdit, "Password", 115, 150, 200, 25, true);
+	txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
+	txtFieldSetup(&passwordEdt, "Password", 115, 150, 200, 25, true);
 
 	loginWindowPtr = loginWindow;
 }
@@ -66,35 +65,39 @@ void KHUB::createRegisterScreen()
 {	
 	setFixedSize(400, 400);
 
-	loginButton->close();
-	registerButton->close();
+	loginBt->close();
+	registerBt->close();
 
-	buttonSetup(&cancelButton, "Cancel", 225, 300, 100, 25, &KHUB::handleCancel);
-	buttonSetupInt(&registerButton, "Register", 100, 300, 100, 25, &KHUB::handleRegister, 1);
+	btSetup(&cancelRegisterBt, "Cancel", 225, 300, 100, 25, &KHUB::handleReboot);
+	btSetupInt(&registerBt, "Register", 100, 300, 100, 25, &KHUB::handleRegister, TRUE);
 
-	textFieldSetup(&loginEdit, "KHUB Username", 115, 100, 200, 25, false);
-	textFieldSetup(&loginConfirmEdit, "Confirm Username", 115, 150, 200, 25, false);
-	textFieldSetup(&passwordEdit, "Password", 115, 200, 200, 25, true);
-	textFieldSetup(&passwordConfirmEdit, "Confirm Password", 115, 250, 200, 25, true);
+	txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
+	txtFieldSetup(&loginConfirmEdt, "Confirm Username", 115, 150, 200, 25, false);
+	txtFieldSetup(&passwordEdt, "Password", 115, 200, 200, 25, true);
+	txtFieldSetup(&passwordConfirmEdt, "Confirm Password", 115, 250, 200, 25, true);
 }
 
-void KHUB::createGroupScreen()
+void KHUB::createNewGroupScreen()
 {
 	groupScreen = new QWidget();
+	boxLayout = new QVBoxLayout();
 
-	groupScreen->setWindowState(groupScreen->windowState() ^ Qt::WindowMaximized);
-	//groupScreen->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
-	groupScreen->setWindowTitle("New Group");
+	//Mapper to handle all main screen signals ##### FIX THIS
+	signalMapper = new QSignalMapper(this);
+
+	groupScreen->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
 	groupScreen->setWindowModality(Qt::ApplicationModal);
-	//groupScreen->setFixedSize(400, 300);
+	groupScreen->setFixedSize(400, 300);
+	groupScreen->setWindowTitle("New Group");
 
-	QLineEdit* groupName, *groupCategory, *groupSubject;
-	QPushButton* createBt, *cancelBt;	
+	btBoxSetup(&createGroupBt, "Create", &KHUB::handleNewGroup);
+	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_newGroup);
+	
+	boxLayout->addWidget(createGroupBt);
+	boxLayout->addWidget(cancelGroupBt);
 
-	createBt = new QPushButton("Create");
-	createBt->setGeometry(QRect(QPoint(100, 100), QSize(100, 100)));
-
-
+	groupScreen->setLayout(boxLayout);
+	groupScreen->show();
 }
 
 void KHUB::createMenu()
@@ -150,9 +153,7 @@ void KHUB::logout()
 //Groups Functions
 void KHUB::createGroup()
 {
-	createGroupScreen();
-
-	groupScreen->show();
+	createNewGroupScreen();
 }
 
 void KHUB::findGroup()
@@ -171,7 +172,7 @@ void KHUB::newSearch()
 /*************/
 
 //Restart login screen
-void KHUB::handleCancel()
+void KHUB::handleReboot()
 {	
 	loginWindowPtr->close();
 
@@ -180,19 +181,41 @@ void KHUB::handleCancel()
 		loginWindowPtr->show();
 }
 
+void KHUB::handleDispose(int slot)
+{
+	switch (slot)
+	{
+	case (int) CancelType::cl_newGroup:
+										destroyPtr(groupScreen);
+										break;
+
+	default:
+			QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");;
+	}
+}
+
 //Close login screen if credentials are good to go and free resources
 void KHUB::handleLogin()
 {
 	SQL databaseConnection;
 	
 	//DEBUG LOGIN PASS
-	//if (databaseConnection.checkCredentials(loginEdit->text(), passwordEdit->text()))
+	//if (databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text()))
 	if (databaseConnection.checkCredentials("victor1234", "gogo"))
 	{
-		loginWindowPtr->close();
+		
 
-		loginWindowPtr = NULL;
-		delete loginWindowPtr;
+		//Cleean Heap
+		destroyPtr(loginEdt);
+		destroyPtr(loginConfirmEdt);
+		destroyPtr(passwordEdt);
+		destroyPtr(passwordConfirmEdt);
+		destroyPtr(registerBt);
+		destroyPtr(cancelRegisterBt);
+		destroyPtr(loginBt);
+		destroyPtr(loginWindowPtr);
+
+		delete signalMapper;
 
 		createMainScreen();
 	}
@@ -204,21 +227,20 @@ void KHUB::handleLogin()
 //Handle register for screen opening or new user 
 void KHUB::handleRegister(int isRegister)
 {
-
 	if (isRegister)
 	{
-		if (!QString::compare(loginEdit->text(), loginConfirmEdit->text()))
+		if (!QString::compare(loginEdt->text(), loginConfirmEdt->text()))
 		{
-			if(!QString::compare(passwordEdit->text(), passwordConfirmEdit->text(), Qt::CaseInsensitive))
+			if(!QString::compare(passwordEdt->text(), passwordConfirmEdt->text(), Qt::CaseInsensitive))
 			{
 				SQL databaseConnection;
 					
-				if (!databaseConnection.checkUser(loginEdit->text()))
+				if (!databaseConnection.checkUser(loginEdt->text()))
 				{
-					databaseConnection.registerUser(loginEdit->text(), passwordEdit->text());
+					databaseConnection.registerUser(loginEdt->text(), passwordEdt->text());
 
 					//After register go back to login screen - recreate it
-					emit handleCancel();
+					emit handleReboot();
 				}
 				else
 					QMessageBox::warning(0, QObject::tr("Warning"), "Username already exists. Please try again.");
@@ -243,37 +265,94 @@ void KHUB::handleRegister(int isRegister)
 	
 }
 
+//Create new group to share knowledge
+void KHUB::handleNewGroup()
+{
+
+}
+
 /**************/
 /* Code Reuse */
 /**************/
 
-void KHUB::buttonSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)())
+void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)())
 {
 	*button = new QPushButton(name, this);
+	
 	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
 	//Connecting Listener
 	connect(*button, &QPushButton::released, this, fptr);
 }
 
-void KHUB::buttonSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value)
+void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value)
 {
 	*button = new QPushButton(name, this);
+	
 	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
 	connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
 	signalMapper->setMapping(*button, value);
 
-	connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)));
+	connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
 }
 
-void KHUB::textFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)
+void KHUB::btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)())
+{
+	*button = new QPushButton(name, this);
+
+	connect(*button, &QPushButton::released, this, fptr);
+}
+
+void KHUB::btBoxSetupInt(QPushButton **button, const QString name, void (KHUB::*fptr)(int parameter), int slot)
+{
+	*button = new QPushButton(name, this);
+
+	connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
+	signalMapper->setMapping(*button, slot);
+
+	connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
+}
+
+void KHUB::txtFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)
 {
 	*textField = new QLineEdit("", this);
+	
 	(*textField)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 	(*textField)->setAlignment(Qt::AlignHCenter);
 	(*textField)->setPlaceholderText(hint);
 
 	if (isPassword)
-		(*textField)->setEchoMode(passwordEdit->Password);
+		(*textField)->setEchoMode(passwordEdt->Password);
+}
+
+void KHUB::txtFieldBoxSetup(QLineEdit **textField, const QString hint, bool isPassword)
+{
+	*textField = new QLineEdit("", this);
+	
+	(*textField)->setAlignment(Qt::AlignHCenter);
+	(*textField)->setPlaceholderText(hint);
+
+	if (isPassword)
+		(*textField)->setEchoMode(passwordEdt->Password);
+}
+
+void KHUB::destroyPtr(QPushButton* ptr)
+{
+	ptr = NULL;
+	delete ptr;
+}
+
+void KHUB::destroyPtr(QLineEdit* ptr)
+{
+	ptr = NULL;
+	delete ptr;
+}
+
+void KHUB::destroyPtr(QWidget* ptr)
+{
+	ptr->close();
+	ptr = NULL;
+	
+	delete ptr;
 }

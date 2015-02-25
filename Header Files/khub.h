@@ -22,9 +22,14 @@
 #include <cstdlib>
 #include <stdio.h>
 
+#define FALSE 0
+#define TRUE 1
+
 class KHUB : public QMainWindow
 {
 	Q_OBJECT
+
+	Q_ENUMS(CancelType)
 
 public:
 
@@ -33,8 +38,18 @@ public:
 	/* Create Screens */
 	void createLoginScreen(KHUB *loginWindow);
 
-private:
+	/* Clean Memory */
+	void destroyPtr(QPushButton* ptr);
+	void destroyPtr(QLineEdit* ptr);
+	void destroyPtr(QWidget* ptr);
 
+	enum class CancelType
+	{
+		cl_newGroup = 10
+	};
+
+private:
+	
 	Ui::KHUBClass ui;
 
 	/* Screens */
@@ -42,11 +57,15 @@ private:
 
 	QWidget* groupScreen;
 
+	/* Layouts */
+	QVBoxLayout* boxLayout;
+
 	/* Buttons */
-	QPushButton* loginButton, *registerButton, *cancelButton;
+	QPushButton* loginBt, *registerBt, *cancelRegisterBt, *createGroupBt, *cancelGroupBt;
 
 	/* TextField */
-	QLineEdit* loginEdit, *passwordEdit, *loginConfirmEdit, *passwordConfirmEdit;
+	QLineEdit* loginEdt, *passwordEdt, *loginConfirmEdt, *passwordConfirmEdt,
+				*groupNameEdt, *groupCategoryEdt, *groupSubjectEdt;
 
 	/* Menu Bar */
 	QMenu* fileMenu, *groupsMenu, *searchMenu;
@@ -60,6 +79,9 @@ private:
 	/* Search Actions */
 	QAction* newSearchAct;
 
+	/* Signal map for different senders */
+	QSignalMapper* signalMapper;
+
 	/* Create Components */
 	void createMenu();
 	void createActions();
@@ -67,15 +89,18 @@ private:
 	/* Create Screens */
 	void createMainScreen();
 	void createRegisterScreen();
-	void createGroupScreen();
+	void createNewGroupScreen();
 
 	/* Components Setup */
-	void buttonSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
-	void buttonSetupInt(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value);
-	void textFieldSetup(QLineEdit** textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+	void btSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
+	void btSetupInt(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value);
 
-	/* Signal map for different senders */
-	QSignalMapper* signalMapper;
+	void btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)());
+	void btBoxSetupInt(QPushButton** button, const QString name, void (KHUB::*fptr)(int parameter), int slot);
+
+	void txtFieldSetup(QLineEdit** textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+
+	void txtFieldBoxSetup(QLineEdit** textField, const QString name, bool isPassword);
 
 /* QT C++ extension for pre-processment */
 private slots:
@@ -94,9 +119,11 @@ private slots:
 	void newSearch();
 
 	/* Login Screen Functions */
-	void handleCancel();
+	void handleReboot();
+	void handleDispose(int slot);
 	void handleLogin();
 	void handleRegister(int isRegister);
+	void handleNewGroup();
 
 };
 
