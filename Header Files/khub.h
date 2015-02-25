@@ -34,14 +34,10 @@ class KHUB : public QMainWindow
 public:
 
 	KHUB(QWidget *parent = 0);
+	~KHUB();
 
 	/* Create Screens */
-	void createLoginScreen(KHUB *loginWindow);
-
-	/* Clean Memory */
-	void destroyPtr(QPushButton* ptr);
-	void destroyPtr(QLineEdit* ptr);
-	void destroyPtr(QWidget* ptr);
+	void createLoginScreen(KHUB& loginWindow);
 
 	enum class CancelType
 	{
@@ -61,7 +57,7 @@ private:
 	QVBoxLayout* boxLayout;
 
 	/* Buttons */
-	QPushButton* loginBt, *registerBt, *cancelRegisterBt, *createGroupBt, *cancelGroupBt;
+	QPushButton* loginBt, *registerBt = NULL, *cancelRegisterBt, *createGroupBt, *cancelGroupBt;
 
 	/* TextField */
 	QLineEdit* loginEdt, *passwordEdt, *loginConfirmEdt, *passwordConfirmEdt,

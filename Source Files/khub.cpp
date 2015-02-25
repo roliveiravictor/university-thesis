@@ -23,6 +23,11 @@ KHUB::KHUB(QWidget *parent)
 	ui.setupUi(this);
 }
 
+KHUB::~KHUB()
+{
+	
+}
+
 /*****************/
 /* Screens Setup */
 /*****************/
@@ -42,15 +47,15 @@ void KHUB::createMainScreen()
 	mainWindow->show();
 }
 
-void KHUB::createLoginScreen(KHUB *loginWindow)
+void KHUB::createLoginScreen(KHUB& loginWindow)
 {
 	signalMapper = new QSignalMapper(this);
 
-	loginWindow->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
-	loginWindow->setFixedSize(400, 300);
+	loginWindow.setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	loginWindow.setFixedSize(400, 300);
 
-	QToolBar* tb = loginWindow->findChild<QToolBar *>();
-		loginWindow->removeToolBar(tb);
+	QToolBar* tb = loginWindow.findChild<QToolBar *>();
+		loginWindow.removeToolBar(tb);
 	
 	btSetup(&loginBt, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
 	btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, FALSE);
@@ -58,7 +63,7 @@ void KHUB::createLoginScreen(KHUB *loginWindow)
 	txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
 	txtFieldSetup(&passwordEdt, "Password", 115, 150, 200, 25, true);
 
-	loginWindowPtr = loginWindow;
+	loginWindowPtr = &loginWindow;
 }
 
 void KHUB::createRegisterScreen()
@@ -146,8 +151,7 @@ void KHUB::exit()
 void KHUB::logout()
 {
 	//Restart
-	qApp->quit();
-	QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+	emit handleReboot();
 }
 
 //Groups Functions
@@ -174,11 +178,8 @@ void KHUB::newSearch()
 //Restart login screen
 void KHUB::handleReboot()
 {	
-	loginWindowPtr->close();
-
-	loginWindowPtr = new KHUB();
-		loginWindowPtr->createLoginScreen(loginWindowPtr);
-		loginWindowPtr->show();
+	qApp->quit();
+	QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
 }
 
 void KHUB::handleDispose(int slot)
@@ -186,7 +187,7 @@ void KHUB::handleDispose(int slot)
 	switch (slot)
 	{
 	case (int) CancelType::cl_newGroup:
-										destroyPtr(groupScreen);
+										groupScreen->~QWidget();
 										break;
 
 	default:
@@ -203,21 +204,25 @@ void KHUB::handleLogin()
 	//if (databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text()))
 	if (databaseConnection.checkCredentials("victor1234", "gogo"))
 	{
-		
-
 		//Cleean Heap
-		destroyPtr(loginEdt);
-		destroyPtr(loginConfirmEdt);
-		destroyPtr(passwordEdt);
-		destroyPtr(passwordConfirmEdt);
-		destroyPtr(registerBt);
-		destroyPtr(cancelRegisterBt);
-		destroyPtr(loginBt);
-		destroyPtr(loginWindowPtr);
+		loginEdt->~QLineEdit();
+		passwordEdt->~QLineEdit();
+		loginBt->~QPushButton();
 
-		delete signalMapper;
+		//Check if any registration was created before clearing heap
+		if (registerBt == NULL)
+		{
+			loginConfirmEdt->~QLineEdit();
+			passwordConfirmEdt->~QLineEdit();
+			registerBt->~QPushButton();
+			cancelRegisterBt->~QPushButton();
+		}
+
+		loginWindowPtr->close();
 
 		createMainScreen();
+
+		signalMapper->~QSignalMapper();
 	}
 		
 	else
@@ -335,24 +340,4 @@ void KHUB::txtFieldBoxSetup(QLineEdit **textField, const QString hint, bool isPa
 
 	if (isPassword)
 		(*textField)->setEchoMode(passwordEdt->Password);
-}
-
-void KHUB::destroyPtr(QPushButton* ptr)
-{
-	ptr = NULL;
-	delete ptr;
-}
-
-void KHUB::destroyPtr(QLineEdit* ptr)
-{
-	ptr = NULL;
-	delete ptr;
-}
-
-void KHUB::destroyPtr(QWidget* ptr)
-{
-	ptr->close();
-	ptr = NULL;
-	
-	delete ptr;
 }
