@@ -85,7 +85,7 @@ void KHUB::createRegisterScreen()
 void KHUB::createNewGroupScreen()
 {
 	groupScreen = new QWidget();
-	boxLayout = new QVBoxLayout();
+	boxLayout = new QVBoxLayout(groupScreen);
 
 	//Mapper to handle all main screen signals ##### FIX THIS
 	signalMapper = new QSignalMapper(this);
@@ -95,11 +95,12 @@ void KHUB::createNewGroupScreen()
 	groupScreen->setFixedSize(400, 300);
 	groupScreen->setWindowTitle("New Group");
 
+	txtFieldBoxSetup(&groupNameEdt, "Group Name", false);
+	txtFieldBoxSetup(&groupCategoryEdt, "Group Category", false);
+	txtFieldBoxSetup(&groupSubjectEdt, "Group Subject", false);
+
 	btBoxSetup(&createGroupBt, "Create", &KHUB::handleNewGroup);
 	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_newGroup);
-	
-	boxLayout->addWidget(createGroupBt);
-	boxLayout->addWidget(cancelGroupBt);
 
 	groupScreen->setLayout(boxLayout);
 	groupScreen->show();
@@ -187,7 +188,8 @@ void KHUB::handleDispose(int slot)
 	switch (slot)
 	{
 	case (int) CancelType::cl_newGroup:
-										groupScreen->~QWidget();
+										groupScreen->~QWidget(); //### Destructors also get ride of children pointers? I mean, if the object was destroyed am I having memory leak if Im not deleting the pointer? ####
+										
 										break;
 
 	default:
@@ -282,9 +284,8 @@ void KHUB::handleNewGroup()
 
 void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)())
 {
-	*button = new QPushButton(name, this);
-	
-	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+	*button = new QPushButton(name, this);	
+		(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
 	//Connecting Listener
 	connect(*button, &QPushButton::released, this, fptr);
@@ -293,8 +294,7 @@ void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY,
 void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value)
 {
 	*button = new QPushButton(name, this);
-	
-	(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+		(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
 	connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
 	signalMapper->setMapping(*button, value);
@@ -307,11 +307,15 @@ void KHUB::btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fpt
 	*button = new QPushButton(name, this);
 
 	connect(*button, &QPushButton::released, this, fptr);
+
+	boxLayout->addWidget(*button);
 }
 
 void KHUB::btBoxSetupInt(QPushButton **button, const QString name, void (KHUB::*fptr)(int parameter), int slot)
 {
 	*button = new QPushButton(name, this);
+
+	boxLayout->addWidget(*button);
 
 	connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
 	signalMapper->setMapping(*button, slot);
@@ -322,10 +326,9 @@ void KHUB::btBoxSetupInt(QPushButton **button, const QString name, void (KHUB::*
 void KHUB::txtFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword)
 {
 	*textField = new QLineEdit("", this);
-	
-	(*textField)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
-	(*textField)->setAlignment(Qt::AlignHCenter);
-	(*textField)->setPlaceholderText(hint);
+		(*textField)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
+		(*textField)->setAlignment(Qt::AlignHCenter);
+		(*textField)->setPlaceholderText(hint);
 
 	if (isPassword)
 		(*textField)->setEchoMode(passwordEdt->Password);
@@ -334,9 +337,10 @@ void KHUB::txtFieldSetup(QLineEdit **textField, const QString hint, int posX, in
 void KHUB::txtFieldBoxSetup(QLineEdit **textField, const QString hint, bool isPassword)
 {
 	*textField = new QLineEdit("", this);
-	
-	(*textField)->setAlignment(Qt::AlignHCenter);
-	(*textField)->setPlaceholderText(hint);
+		(*textField)->setAlignment(Qt::AlignHCenter);
+		(*textField)->setPlaceholderText(hint);
+
+	boxLayout->addWidget(*textField);
 
 	if (isPassword)
 		(*textField)->setEchoMode(passwordEdt->Password);
