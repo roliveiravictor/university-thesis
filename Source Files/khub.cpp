@@ -275,6 +275,9 @@ void KHUB::handleRegister(int isRegister)
 //Create new group to share knowledge
 void KHUB::handleNewGroup()
 {
+	SQL databaseConnection;
+
+	databaseConnection.createGroup(groupNameEdt->text(), groupCategoryEdt->text(), groupSubjectEdt->text());
 
 }
 

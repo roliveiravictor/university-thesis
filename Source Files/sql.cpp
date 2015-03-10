@@ -47,6 +47,38 @@ SQL::SQL()
 		}
 }
 
+SQL::~SQL()
+{
+
+}
+
+/*****************/
+/* Group Control */
+/*****************/
+
+bool SQL::createGroup(QString name, QString category, QString subject)
+{
+	try
+	{
+		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+
+		query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(SQL::user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
+		query.exec();
+
+		return true;
+	}
+	catch (sql::SQLException &e)
+	{
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+
+		QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+
+		return false;
+	}
+}
+
 /*****************/
 /* Login Control */
 /*****************/
@@ -59,8 +91,12 @@ bool SQL::checkCredentials(QString login, QString password)
 		//Building QSqlQuery object and passing database setup
 		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
-		query.prepare("SELECT user_name FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
+		query.prepare("SELECT user_id FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
 		query.exec();
+
+		SQL::user_id = query.value(0).toInt();
+
+		qDebug() << user_id;
 
 		if (query.size() != 0)
 			return true;
@@ -68,20 +104,18 @@ bool SQL::checkCredentials(QString login, QString password)
 		{
 			QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
 
-			//Closing Database
-			query.clear();
-			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+				//Closing Database
+				query.clear();
+				QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
 			return false;
-		}
-			
+		}			
 	}
 		catch (sql::SQLException &e)
 		{
 			cout << "# ERR: SQLException in " << __FILE__;
 			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << "# ERR: " << e.what();
-
 
 			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
@@ -100,7 +134,7 @@ bool SQL::checkUser(QString login)
 	if (query.size() != 0)
 		return true;
 	else
-		return false;
+		return false;		
 }
 
 //Apply for new user
@@ -108,7 +142,7 @@ void SQL::registerUser(QString login, QString password)
 {
 	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-	query.prepare("INSERT INTO users(user_name, user_password) VALUES('" + login + "', '" + password + "')");
+	query.prepare("INSERT INTO users(user_name, user_password) VALUES ('" + login + "', '" + password + "')");
 	query.exec();
 	query.clear();
 
@@ -138,3 +172,6 @@ void SQL::databaseAccess()
 	else
 		cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
 }
+
+
+
