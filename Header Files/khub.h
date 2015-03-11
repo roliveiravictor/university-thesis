@@ -63,9 +63,6 @@ private:
 	QLineEdit* loginEdt, *passwordEdt, *loginConfirmEdt, *passwordConfirmEdt,
 				*groupNameEdt, *groupCategoryEdt, *groupSubjectEdt;
 
-	/* Menu Bar */
-	QMenu* fileMenu, *groupsMenu, *searchMenu;
-
 	/* File Actions */
 	QAction* exitAct, *logoutAct;
 

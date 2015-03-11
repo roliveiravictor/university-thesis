@@ -49,7 +49,7 @@ public:
 	bool checkCredentials(QString login, QString password);
 
 	/* Register Control */
-	void registerUser(QString login, QString password);
+	bool registerUser(QString login, QString password);
 	bool checkUser(QString login);
 
 	int user_id;
@@ -61,6 +61,8 @@ private:
 	
 	/* Local config file with DB access information */
 	void databaseAccess();
+
+	void closeDB(QSqlQuery query);
 };
 
 

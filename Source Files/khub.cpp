@@ -16,6 +16,9 @@
 
 #include "khub.h"
 
+/* MEMORY LEAK DEBUG CHECK */
+#include "vld.h"
+
 
 KHUB::KHUB(QWidget *parent)
 	: QMainWindow(parent)
@@ -25,7 +28,7 @@ KHUB::KHUB(QWidget *parent)
 
 KHUB::~KHUB()
 {
-	
+
 }
 
 /*****************/
@@ -45,6 +48,8 @@ void KHUB::createMainScreen()
 	mainWindow->createActions();
 	mainWindow->createMenu();
 	mainWindow->show();
+
+	delete tb;
 }
 
 void KHUB::createLoginScreen(KHUB& loginWindow)
@@ -108,6 +113,8 @@ void KHUB::createNewGroupScreen()
 
 void KHUB::createMenu()
 {
+	QMenu* fileMenu, *groupsMenu, *searchMenu;
+
 	fileMenu = menuBar()->addMenu(tr("&File"));
 		fileMenu->addAction(logoutAct);
 		fileMenu->addAction(exitAct);
@@ -146,6 +153,14 @@ void KHUB::createActions()
 //File Functions
 void KHUB::exit()
 {
+	delete logoutAct;
+	delete exitAct;
+
+	delete createGroupAct;
+	delete findGroupAct;
+
+	delete newSearchAct;
+
 	QApplication::quit();
 }
 
@@ -188,8 +203,7 @@ void KHUB::handleDispose(int slot)
 	switch (slot)
 	{
 	case (int) CancelType::cl_newGroup:
-										groupScreen->~QWidget(); //### Destructors also get ride of children pointers? I mean, if the object was destroyed am I having memory leak if Im not deleting the pointer? ####
-										
+										delete groupScreen;
 										break;
 
 	default:
@@ -207,24 +221,24 @@ void KHUB::handleLogin()
 	if (databaseConnection.checkCredentials("victor1234", "gogo"))
 	{
 		//Cleean Heap
-		loginEdt->~QLineEdit();
-		passwordEdt->~QLineEdit();
-		loginBt->~QPushButton();
+		delete loginEdt;
+		delete passwordEdt;
+		delete loginBt;
 
 		//Check if any registration was created before clearing heap
 		if (registerBt == NULL)
 		{
-			loginConfirmEdt->~QLineEdit();
-			passwordConfirmEdt->~QLineEdit();
-			registerBt->~QPushButton();
-			cancelRegisterBt->~QPushButton();
+			delete loginConfirmEdt;
+			delete passwordConfirmEdt;
+			delete registerBt;
+			delete cancelRegisterBt;
 		}
 
 		loginWindowPtr->close();
 
 		createMainScreen();
-
-		signalMapper->~QSignalMapper();
+		
+		delete signalMapper;
 	}
 		
 	else
@@ -244,10 +258,14 @@ void KHUB::handleRegister(int isRegister)
 					
 				if (!databaseConnection.checkUser(loginEdt->text()))
 				{
-					databaseConnection.registerUser(loginEdt->text(), passwordEdt->text());
+					if (databaseConnection.registerUser(loginEdt->text(), passwordEdt->text()))
+					{
+						QMessageBox::information(0, QObject::tr("Success"), "Registration Successful.");
 
-					//After register go back to login screen - recreate it
-					emit handleReboot();
+						//After register go back to login screen - recreate it
+						emit handleReboot();
+					}
+					
 				}
 				else
 					QMessageBox::warning(0, QObject::tr("Warning"), "Username already exists. Please try again.");
@@ -348,3 +366,5 @@ void KHUB::txtFieldBoxSetup(QLineEdit **textField, const QString hint, bool isPa
 	if (isPassword)
 		(*textField)->setEchoMode(passwordEdt->Password);
 }
+
+

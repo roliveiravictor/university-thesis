@@ -63,9 +63,11 @@ bool SQL::createGroup(QString name, QString category, QString subject)
 		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
 		query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(SQL::user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
-		query.exec();
+		
+		bool status = query.exec();
+		closeDB(query);
 
-		return true;
+		return status;
 	}
 	catch (sql::SQLException &e)
 	{
@@ -103,10 +105,7 @@ bool SQL::checkCredentials(QString login, QString password)
 		else
 		{
 			QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
-
-				//Closing Database
-				query.clear();
-				QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+			closeDB(query);
 
 			return false;
 		}			
@@ -138,15 +137,16 @@ bool SQL::checkUser(QString login)
 }
 
 //Apply for new user
-void SQL::registerUser(QString login, QString password)
+bool SQL::registerUser(QString login, QString password)
 {
 	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
 	query.prepare("INSERT INTO users(user_name, user_password) VALUES ('" + login + "', '" + password + "')");
-	query.exec();
-	query.clear();
+	bool status = query.exec();
+	
+	closeDB(query);
 
-	QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+	return status;
 }
 
 /**********************/
@@ -173,5 +173,10 @@ void SQL::databaseAccess()
 		cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
 }
 
+void SQL::closeDB(QSqlQuery query)
+{
+	query.clear();
+	QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+}
 
 
