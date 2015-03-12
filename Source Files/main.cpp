@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
 
 	KHUB loginWindow;
 	
-	loginWindow.createLoginScreen(loginWindow);
+	//loginWindow.create_LoginScreen(loginWindow);
+	loginWindow.create_MainScreen(9);
 	loginWindow.show();
 
 	return application.exec();

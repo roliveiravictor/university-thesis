@@ -16,7 +16,7 @@
 
 #include "khub.h"
 
-/* MEMORY LEAK DEBUG CHECK */
+/* MEMORY LEAK DEBUG */
 #include "vld.h"
 
 
@@ -35,24 +35,27 @@ KHUB::~KHUB()
 /* Screens Setup */
 /*****************/
 
-void KHUB::createMainScreen()
+void KHUB::create_MainScreen(int user_id)
 {
 	//Sets main full screen and shows
 	mainWindow = new KHUB();
 		mainWindow->setWindowState(mainWindow->windowState() ^ Qt::WindowMaximized);
 
+	//Get user id reference from previous login window
+	mainWindow->user_id = user_id;
+
 	//Remove default empty toolbar
 	QToolBar* tb = mainWindow->findChild<QToolBar *>();
 		mainWindow->removeToolBar(tb);
 
-	mainWindow->createActions();
-	mainWindow->createMenu();
+	mainWindow->set_Actions();
+	mainWindow->set_Menu();
 	mainWindow->show();
 
 	delete tb;
 }
 
-void KHUB::createLoginScreen(KHUB& loginWindow)
+void KHUB::create_LoginScreen(KHUB& loginWindow)
 {
 	signalMapper = new QSignalMapper(this);
 
@@ -71,7 +74,7 @@ void KHUB::createLoginScreen(KHUB& loginWindow)
 	loginWindowPtr = &loginWindow;
 }
 
-void KHUB::createRegisterScreen()
+void KHUB::create_RegisterScreen()
 {	
 	setFixedSize(400, 400);
 
@@ -87,18 +90,23 @@ void KHUB::createRegisterScreen()
 	txtFieldSetup(&passwordConfirmEdt, "Confirm Password", 115, 250, 200, 25, true);
 }
 
-void KHUB::createNewGroupScreen()
+void KHUB::mainWindow_GroupScreen()
 {
-	groupScreen = new QWidget();
-	boxLayout = new QVBoxLayout(groupScreen);
+	
+}
+
+void KHUB::dialog_NewGroup()
+{
+	groupDialog = new QWidget();
+	boxLayout = new QVBoxLayout(groupDialog);
 
 	//Mapper to handle all main screen signals ##### FIX THIS
 	signalMapper = new QSignalMapper(this);
 
-	groupScreen->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
-	groupScreen->setWindowModality(Qt::ApplicationModal);
-	groupScreen->setFixedSize(400, 300);
-	groupScreen->setWindowTitle("New Group");
+	groupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	groupDialog->setWindowModality(Qt::ApplicationModal);
+	groupDialog->setFixedSize(400, 300);
+	groupDialog->setWindowTitle("New Group");
 
 	txtFieldBoxSetup(&groupNameEdt, "Group Name", false);
 	txtFieldBoxSetup(&groupCategoryEdt, "Group Category", false);
@@ -107,11 +115,11 @@ void KHUB::createNewGroupScreen()
 	btBoxSetup(&createGroupBt, "Create", &KHUB::handleNewGroup);
 	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_newGroup);
 
-	groupScreen->setLayout(boxLayout);
-	groupScreen->show();
+	groupDialog->setLayout(boxLayout);
+	groupDialog->show();
 }
 
-void KHUB::createMenu()
+void KHUB::set_Menu()
 {
 	QMenu* fileMenu, *groupsMenu, *searchMenu;
 
@@ -131,7 +139,7 @@ void KHUB::createMenu()
 /* Actions Handler */
 /*******************/
 
-void KHUB::createActions()
+void KHUB::set_Actions()
 {
 	//Files Handler
 	logoutAct = new QAction(tr("&Logout"), this);
@@ -173,7 +181,7 @@ void KHUB::logout()
 //Groups Functions
 void KHUB::createGroup()
 {
-	createNewGroupScreen();
+	dialog_NewGroup();
 }
 
 void KHUB::findGroup()
@@ -202,12 +210,14 @@ void KHUB::handleDispose(int slot)
 {
 	switch (slot)
 	{
-	case (int) CancelType::cl_newGroup:
-										delete groupScreen;
-										break;
+	case (int) 
+		
+		CancelType::cl_newGroup:
+								delete groupDialog;
+								break;
 
-	default:
-			QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");;
+		default:
+				QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");;
 	}
 }
 
@@ -218,7 +228,9 @@ void KHUB::handleLogin()
 	
 	//DEBUG LOGIN PASS
 	//if (databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text()))
-	if (databaseConnection.checkCredentials("victor1234", "gogo"))
+	user_id = databaseConnection.checkCredentials("victor1234", "gogo");
+	
+	if (user_id != NULL)
 	{
 		//Cleean Heap
 		delete loginEdt;
@@ -236,13 +248,13 @@ void KHUB::handleLogin()
 
 		loginWindowPtr->close();
 
-		createMainScreen();
+		create_MainScreen(user_id);
 		
 		delete signalMapper;
 	}
 		
 	else
-		qDebug() << "Failed to login";
+		QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
 }
 
 //Handle register for screen opening or new user 
@@ -282,7 +294,7 @@ void KHUB::handleRegister(int isRegister)
 	{
 		loginWindowPtr->hide();
 
-		createRegisterScreen();
+		create_RegisterScreen();
 
 		loginWindowPtr->repaint();
 		loginWindowPtr->show();
@@ -295,7 +307,17 @@ void KHUB::handleNewGroup()
 {
 	SQL databaseConnection;
 
-	databaseConnection.createGroup(groupNameEdt->text(), groupCategoryEdt->text(), groupSubjectEdt->text());
+	bool status = databaseConnection.createGroup(user_id, groupNameEdt->text(), groupCategoryEdt->text(), groupSubjectEdt->text());
+
+	if (status)
+	{
+		delete groupDialog;
+		QMessageBox::information(0, QObject::tr("Success"), "New group created.");
+		mainWindow_GroupScreen();
+	}
+		
+	else
+		QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
 
 }
 

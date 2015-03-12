@@ -37,7 +37,8 @@ public:
 	~KHUB();
 
 	/* Create Screens */
-	void createLoginScreen(KHUB& loginWindow);
+	void create_LoginScreen(KHUB& loginWindow);
+	void create_MainScreen(int user_id);
 
 	enum class CancelType
 	{
@@ -45,13 +46,16 @@ public:
 	};
 
 private:
-	
+
 	Ui::KHUBClass ui;
+
+	/* Reference to global user id */
+	int user_id;
 
 	/* Screens */
 	KHUB* mainWindow, *loginWindowPtr;
 
-	QWidget* groupScreen;
+	QWidget* groupDialog;
 
 	/* Layouts */
 	QVBoxLayout* boxLayout;
@@ -76,13 +80,17 @@ private:
 	QSignalMapper* signalMapper;
 
 	/* Create Components */
-	void createMenu();
-	void createActions();
+	void set_Menu();
+	void set_Actions();
 
 	/* Create Screens */
-	void createMainScreen();
-	void createRegisterScreen();
-	void createNewGroupScreen();
+	//void create_MainScreen(int user_id);
+	void create_RegisterScreen();
+
+	void mainWindow_GroupScreen();
+
+	/* Create Dialogs */
+	void dialog_NewGroup();
 
 	/* Components Setup */
 	void btSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());

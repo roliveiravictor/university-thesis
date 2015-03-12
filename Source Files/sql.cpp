@@ -36,15 +36,14 @@ SQL::SQL()
 			QMessageBox::critical(0, QObject::tr("Database Error"), database.lastError().text());
 		}
 	}
-		catch (sql::SQLException &e) 
-		{
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
+	catch (sql::SQLException &e) 
+	{
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
 
-
-			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
-		}
+		QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+	}
 }
 
 SQL::~SQL()
@@ -56,13 +55,13 @@ SQL::~SQL()
 /* Group Control */
 /*****************/
 
-bool SQL::createGroup(QString name, QString category, QString subject)
+bool SQL::createGroup(int user_id, QString name, QString category, QString subject)
 {
 	try
 	{
 		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-		query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(SQL::user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
+		query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
 		
 		bool status = query.exec();
 		closeDB(query);
@@ -86,7 +85,7 @@ bool SQL::createGroup(QString name, QString category, QString subject)
 /*****************/
 
 //Check and confirm login information
-bool SQL::checkCredentials(QString login, QString password)
+int SQL::checkCredentials(QString login, QString password)
 {
 	try
 	{
@@ -95,31 +94,33 @@ bool SQL::checkCredentials(QString login, QString password)
 		
 		query.prepare("SELECT user_id FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
 		query.exec();
-
-		SQL::user_id = query.value(0).toInt();
-
-		qDebug() << user_id;
+		query.first();
 
 		if (query.size() != 0)
-			return true;
+		{
+			int user_id = query.value(0).toInt();
+
+			closeDB(query);
+			return user_id;
+		}			
 		else
 		{
 			QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
 			closeDB(query);
 
-			return false;
+			return NULL;
 		}			
 	}
-		catch (sql::SQLException &e)
-		{
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
+	catch (sql::SQLException &e)
+	{
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
 
-			QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+		QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
-			return false;
-		}
+		return false;
+	}
 }
 
 //Check if user exists

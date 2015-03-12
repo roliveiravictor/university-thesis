@@ -43,16 +43,14 @@ public:
 	~SQL();
 	
 	/* Group Control  */
-	bool createGroup(QString name, QString category, QString subject);
+	bool createGroup(int user_id, QString name, QString category, QString subject);
 
 	/* Login Control */
-	bool checkCredentials(QString login, QString password);
+	int checkCredentials(QString login, QString password);
 
 	/* Register Control */
 	bool registerUser(QString login, QString password);
 	bool checkUser(QString login);
-
-	int user_id;
 
 private:
 
