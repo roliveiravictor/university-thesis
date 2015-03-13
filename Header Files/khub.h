@@ -42,7 +42,8 @@ public:
 
 	enum class CancelType
 	{
-		cl_newGroup = 10
+		cl_newGroup = 10,
+		cl_joinGroup = 11
 	};
 
 private:
@@ -55,13 +56,13 @@ private:
 	/* Screens */
 	KHUB* mainWindow, *loginWindowPtr;
 
-	QWidget* groupDialog;
+	QWidget* newGroupDialog, *joinGroupDialog;
 
 	/* Layouts */
 	QVBoxLayout* boxLayout;
 
 	/* Buttons */
-	QPushButton* loginBt, *registerBt = NULL, *cancelRegisterBt, *createGroupBt, *cancelGroupBt;
+	QPushButton* loginBt, *registerBt = NULL, *cancelRegisterBt, *createGroupBt, *joinGroupBt,  *cancelGroupBt;
 
 	/* TextField */
 	QLineEdit* loginEdt, *passwordEdt, *loginConfirmEdt, *passwordConfirmEdt,
@@ -71,7 +72,7 @@ private:
 	QAction* exitAct, *logoutAct;
 
 	/* Groups Actions */
-	QAction* createGroupAct, *findGroupAct;
+	QAction* createGroupAct, *joinGroupAct;
 
 	/* Search Actions */
 	QAction* newSearchAct;
@@ -91,6 +92,7 @@ private:
 
 	/* Create Dialogs */
 	void dialog_NewGroup();
+	void dialog_JoinGroup();
 
 	/* Components Setup */
 	void btSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
@@ -114,7 +116,10 @@ private slots:
 
 	/* Groups  Functions */
 	void createGroup();
-	void findGroup();
+	void joinGroup();
+
+	void handleNewGroup();
+	void handleJoinGroup();
 
 	/* Search Functions */
 	void newSearch();
@@ -124,7 +129,7 @@ private slots:
 	void handleDispose(int slot);
 	void handleLogin();
 	void handleRegister(int isRegister);
-	void handleNewGroup();
+	
 
 };
 

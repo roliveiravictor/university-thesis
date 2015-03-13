@@ -65,6 +65,7 @@ void KHUB::create_LoginScreen(KHUB& loginWindow)
 	QToolBar* tb = loginWindow.findChild<QToolBar *>();
 		loginWindow.removeToolBar(tb);
 	
+
 	btSetup(&loginBt, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
 	btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, FALSE);
 	
@@ -97,16 +98,16 @@ void KHUB::mainWindow_GroupScreen()
 
 void KHUB::dialog_NewGroup()
 {
-	groupDialog = new QWidget();
-	boxLayout = new QVBoxLayout(groupDialog);
+	newGroupDialog = new QWidget();
+	boxLayout = new QVBoxLayout(newGroupDialog);
 
 	//Mapper to handle all main screen signals ##### FIX THIS
 	signalMapper = new QSignalMapper(this);
 
-	groupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
-	groupDialog->setWindowModality(Qt::ApplicationModal);
-	groupDialog->setFixedSize(400, 300);
-	groupDialog->setWindowTitle("New Group");
+	newGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	newGroupDialog->setWindowModality(Qt::ApplicationModal);
+	newGroupDialog->setFixedSize(400, 300);
+	newGroupDialog->setWindowTitle("New Group");
 
 	txtFieldBoxSetup(&groupNameEdt, "Group Name", false);
 	txtFieldBoxSetup(&groupCategoryEdt, "Group Category", false);
@@ -115,8 +116,28 @@ void KHUB::dialog_NewGroup()
 	btBoxSetup(&createGroupBt, "Create", &KHUB::handleNewGroup);
 	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_newGroup);
 
-	groupDialog->setLayout(boxLayout);
-	groupDialog->show();
+	newGroupDialog->setLayout(boxLayout);
+	newGroupDialog->show();
+}
+
+void KHUB::dialog_JoinGroup()
+{
+	joinGroupDialog = new QWidget();
+	boxLayout = new QVBoxLayout(joinGroupDialog);
+
+	//Mapper to handle all main screen signals ##### FIX THIS
+	signalMapper = new QSignalMapper(this);
+
+	joinGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	joinGroupDialog->setWindowModality(Qt::ApplicationModal);
+	joinGroupDialog->setFixedSize(400, 300);
+	joinGroupDialog->setWindowTitle("Join Group");
+
+	//btBoxSetup(&joinGroupBt, "Join", &KHUB::handleJoinGroup);
+	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_joinGroup);
+
+	joinGroupDialog->setLayout(boxLayout);
+	joinGroupDialog->show();
 }
 
 void KHUB::set_Menu()
@@ -129,7 +150,7 @@ void KHUB::set_Menu()
 	
 	groupsMenu = menuBar()->addMenu(tr("&Groups"));
 		groupsMenu->addAction(createGroupAct);
-		groupsMenu->addAction(findGroupAct);
+		groupsMenu->addAction(joinGroupAct);
 
 	searchMenu = menuBar()->addMenu(tr("&Search"));
 		searchMenu->addAction(newSearchAct);
@@ -149,13 +170,14 @@ void KHUB::set_Actions()
 	connect(logoutAct, SIGNAL(triggered()), this, SLOT(logout()));
 
 	//Groups Handler
-	createGroupAct = new QAction(tr("&CreateGroup"), this);
-	findGroupAct = new QAction(tr("&FindGroup"), this);
+	createGroupAct = new QAction(tr("&Create Group"), this);
+	joinGroupAct = new QAction(tr("&Join Group"), this);
 
 	connect(createGroupAct, SIGNAL(triggered()), this, SLOT(createGroup()));
+	connect(joinGroupAct, SIGNAL(triggered()), this, SLOT(joinGroup()));
 
 	//Search Handler
-	newSearchAct = new QAction(tr("&NewSearch"), this);
+	newSearchAct = new QAction(tr("&New Search"), this);
 }
 
 //File Functions
@@ -165,7 +187,7 @@ void KHUB::exit()
 	delete exitAct;
 
 	delete createGroupAct;
-	delete findGroupAct;
+	delete joinGroupAct;
 
 	delete newSearchAct;
 
@@ -184,9 +206,9 @@ void KHUB::createGroup()
 	dialog_NewGroup();
 }
 
-void KHUB::findGroup()
+void KHUB::joinGroup()
 {
-
+	dialog_JoinGroup();
 }
 
 //Search Functions
@@ -210,14 +232,17 @@ void KHUB::handleDispose(int slot)
 {
 	switch (slot)
 	{
-	case (int) 
-		
-		CancelType::cl_newGroup:
-								delete groupDialog;
-								break;
+		case (int) CancelType::cl_newGroup:
+											delete newGroupDialog;
+											break;
 
-		default:
-				QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");;
+		case (int) CancelType::cl_joinGroup:
+											delete joinGroupDialog;
+											break;
+
+
+			default:
+					QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");
 	}
 }
 
@@ -311,13 +336,19 @@ void KHUB::handleNewGroup()
 
 	if (status)
 	{
-		delete groupDialog;
+		delete newGroupDialog;
 		QMessageBox::information(0, QObject::tr("Success"), "New group created.");
 		mainWindow_GroupScreen();
 	}
 		
 	else
 		QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
+
+}
+
+//Find new group to join
+void KHUB::handleJoinGroup()
+{
 
 }
 
