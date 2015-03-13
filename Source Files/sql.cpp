@@ -51,6 +51,16 @@ SQL::~SQL()
 
 }
 
+/******************/
+/* Search Control */
+/******************/
+
+bool SQL::search(QString keywords)
+{
+	return NULL;
+}
+
+
 /*****************/
 /* Group Control */
 /*****************/
@@ -63,6 +73,31 @@ bool SQL::createGroup(int user_id, QString name, QString category, QString subje
 
 		query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
 		
+		bool status = query.exec();
+		closeDB(query);
+
+		return status;
+	}
+	catch (sql::SQLException &e)
+	{
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+
+		QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+
+		return false;
+	}
+}
+
+bool SQL::joinGroup(int user_id, int group_id)
+{
+	try
+	{
+		QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+
+		query.prepare("SELECT * FROM groups where group_id ='" + QString::number(group_id) + "'");
+
 		bool status = query.exec();
 		closeDB(query);
 

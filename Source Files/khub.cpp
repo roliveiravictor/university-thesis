@@ -96,12 +96,16 @@ void KHUB::mainWindow_GroupScreen()
 	
 }
 
+/*****************/
+/* Dialogs Setup */
+/*****************/
+
 void KHUB::dialog_NewGroup()
 {
 	newGroupDialog = new QWidget();
 	boxLayout = new QVBoxLayout(newGroupDialog);
 
-	//Mapper to handle all main screen signals ##### FIX THIS
+	// Mapper to handle all main screen signals ##### FIX THIS
 	signalMapper = new QSignalMapper(this);
 
 	newGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
@@ -114,7 +118,7 @@ void KHUB::dialog_NewGroup()
 	txtFieldBoxSetup(&groupSubjectEdt, "Group Subject", false);
 
 	btBoxSetup(&createGroupBt, "Create", &KHUB::handleNewGroup);
-	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_newGroup);
+	btBoxSetupInt(&cancelBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_newGroup);
 
 	newGroupDialog->setLayout(boxLayout);
 	newGroupDialog->show();
@@ -125,7 +129,6 @@ void KHUB::dialog_JoinGroup()
 	joinGroupDialog = new QWidget();
 	boxLayout = new QVBoxLayout(joinGroupDialog);
 
-	//Mapper to handle all main screen signals ##### FIX THIS
 	signalMapper = new QSignalMapper(this);
 
 	joinGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
@@ -133,12 +136,39 @@ void KHUB::dialog_JoinGroup()
 	joinGroupDialog->setFixedSize(400, 300);
 	joinGroupDialog->setWindowTitle("Join Group");
 
-	//btBoxSetup(&joinGroupBt, "Join", &KHUB::handleJoinGroup);
-	btBoxSetupInt(&cancelGroupBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_joinGroup);
+	txtFieldBoxSetup(&groupIdEdt, "Type Group Id to Join", false);
+
+	btBoxSetup(&joinGroupBt, "Join", &KHUB::handleJoinGroup);
+	btBoxSetupInt(&cancelBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_joinGroup);
 
 	joinGroupDialog->setLayout(boxLayout);
 	joinGroupDialog->show();
 }
+
+void KHUB::dialog_Search()
+{
+	searchDialog = new QWidget();
+	boxLayout = new QVBoxLayout(searchDialog);
+
+	signalMapper = new QSignalMapper(this);
+
+	searchDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+	searchDialog->setWindowModality(Qt::ApplicationModal);
+	searchDialog->setFixedSize(400, 300);
+	searchDialog->setWindowTitle("Serarch");
+
+	txtFieldBoxSetup(&groupIdEdt, "Type Keywords to Search", false);
+
+	btBoxSetup(&searchBt, "Search", &KHUB::handleSearch);
+	btBoxSetupInt(&cancelBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_search);
+
+	searchDialog->setLayout(boxLayout);
+	searchDialog->show();
+}
+
+/**************/
+/* Menu Setup */
+/**************/
 
 void KHUB::set_Menu()
 {
@@ -153,34 +183,36 @@ void KHUB::set_Menu()
 		groupsMenu->addAction(joinGroupAct);
 
 	searchMenu = menuBar()->addMenu(tr("&Search"));
-		searchMenu->addAction(newSearchAct);
+		searchMenu->addAction(searchAct);
 }
 
-/*******************/
-/* Actions Handler */
-/*******************/
+/************/
+/*  Actions */
+/************/
 
 void KHUB::set_Actions()
 {
-	//Files Handler
+	// Files Actions
 	logoutAct = new QAction(tr("&Logout"), this);
 	exitAct = new QAction(tr("&Exit"), this);
 
 	connect(exitAct, SIGNAL(triggered()), this, SLOT(exit()));
 	connect(logoutAct, SIGNAL(triggered()), this, SLOT(logout()));
 
-	//Groups Handler
+	// Groups Actions
 	createGroupAct = new QAction(tr("&Create Group"), this);
 	joinGroupAct = new QAction(tr("&Join Group"), this);
 
 	connect(createGroupAct, SIGNAL(triggered()), this, SLOT(createGroup()));
 	connect(joinGroupAct, SIGNAL(triggered()), this, SLOT(joinGroup()));
 
-	//Search Handler
-	newSearchAct = new QAction(tr("&New Search"), this);
+	// Search Actions
+	searchAct = new QAction(tr("&Search"), this);
+
+	connect(searchAct, SIGNAL(triggered()), this, SLOT(search()));
 }
 
-//File Functions
+// File Functions
 void KHUB::exit()
 {
 	delete logoutAct;
@@ -189,18 +221,18 @@ void KHUB::exit()
 	delete createGroupAct;
 	delete joinGroupAct;
 
-	delete newSearchAct;
+	delete searchAct;
 
 	QApplication::quit();
 }
 
 void KHUB::logout()
 {
-	//Restart
+	// Restart
 	emit handleReboot();
 }
 
-//Groups Functions
+// Groups Functions
 void KHUB::createGroup()
 {
 	dialog_NewGroup();
@@ -211,17 +243,17 @@ void KHUB::joinGroup()
 	dialog_JoinGroup();
 }
 
-//Search Functions
-void KHUB::newSearch()
+// Search Functions
+void KHUB::search()
 {
-
+	dialog_Search();
 }
 
 /*************/
-/* Listeners */
+/* Handlers  */
 /*************/
 
-//Restart login screen
+// Restart login screen
 void KHUB::handleReboot()
 {	
 	qApp->quit();
@@ -240,13 +272,17 @@ void KHUB::handleDispose(int slot)
 											delete joinGroupDialog;
 											break;
 
+		case (int) CancelType::cl_search:
+											delete searchDialog;
+											break;
+
 
 			default:
 					QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");
 	}
 }
 
-//Close login screen if credentials are good to go and free resources
+// Close login screen if credentials are good to go and free resources
 void KHUB::handleLogin()
 {
 	SQL databaseConnection;
@@ -257,12 +293,12 @@ void KHUB::handleLogin()
 	
 	if (user_id != NULL)
 	{
-		//Cleean Heap
+		// Cleean Heap
 		delete loginEdt;
 		delete passwordEdt;
 		delete loginBt;
 
-		//Check if any registration was created before clearing heap
+		// Check if any registration was created before clearing heap
 		if (registerBt == NULL)
 		{
 			delete loginConfirmEdt;
@@ -282,7 +318,7 @@ void KHUB::handleLogin()
 		QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
 }
 
-//Handle register for screen opening or new user 
+// Handle register for screen opening or new user 
 void KHUB::handleRegister(int isRegister)
 {
 	if (isRegister)
@@ -299,7 +335,7 @@ void KHUB::handleRegister(int isRegister)
 					{
 						QMessageBox::information(0, QObject::tr("Success"), "Registration Successful.");
 
-						//After register go back to login screen - recreate it
+						// After register go back to login screen - recreate it
 						emit handleReboot();
 					}
 					
@@ -327,7 +363,7 @@ void KHUB::handleRegister(int isRegister)
 	
 }
 
-//Create new group to share knowledge
+// Create new group to share knowledge
 void KHUB::handleNewGroup()
 {
 	SQL databaseConnection;
@@ -346,10 +382,28 @@ void KHUB::handleNewGroup()
 
 }
 
-//Find new group to join
+// Find new group to join
 void KHUB::handleJoinGroup()
 {
+	SQL databaseConnection;
 
+	bool status = databaseConnection.joinGroup(user_id, 29); //debug groupId 29 groupId->text().toInt()
+
+	if (status)
+	{
+		delete joinGroupDialog;
+	}
+
+	else
+		QMessageBox::critical(0, QObject::tr("Error"), "Could not create a find group to join.");
+
+}
+
+// Make a research
+
+void KHUB::handleSearch()
+{
+	QMessageBox::critical(0, QObject::tr("Error"), "Here.");
 }
 
 /**************/
@@ -361,7 +415,6 @@ void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY,
 	*button = new QPushButton(name, this);	
 		(*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
-	//Connecting Listener
 	connect(*button, &QPushButton::released, this, fptr);
 }
 

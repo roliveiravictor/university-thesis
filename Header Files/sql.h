@@ -42,24 +42,41 @@ public:
 	SQL();
 	~SQL();
 	
-	/* Group Control  */
-	bool createGroup(int user_id, QString name, QString category, QString subject);
+	/******************/
+	/* Search Control */
+	/******************/
 
+	bool search(QString keywords);
+
+	/******************/
+	/* Group Control  */
+	/******************/
+
+	bool createGroup(int user_id, QString name, QString category, QString subject);
+	bool joinGroup(int user_id, int group_id);
+
+	/*****************/
 	/* Login Control */
+	/*****************/
+
 	int checkCredentials(QString login, QString password);
 
+	/********************/
 	/* Register Control */
+	/********************/
+
 	bool registerUser(QString login, QString password);
 	bool checkUser(QString login);
 
 private:
 
-	/* Map to acquire sql credential locally */
+	// Map to acquire sql credential locally
 	map <int, string> dbAccess;
 	
-	/* Local config file with DB access information */
+	// Local config file with DB access information
 	void databaseAccess();
 
+	// Close query and disconnect form DB
 	void closeDB(QSqlQuery query);
 };
 
