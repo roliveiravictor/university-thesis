@@ -14,6 +14,8 @@
 #ifndef KHUB_H
 #define KHUB_H
 
+#include "stdafx.h"
+
 #include <QtWidgets/QMainWindow>
 #include "ui_khub.h"
 #include "sql.h"

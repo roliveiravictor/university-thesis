@@ -35,15 +35,17 @@ void HTTP::sendRequest()
 	QNetworkReply *reply = mgr.get(req);
 	eventLoop.exec(); // blocks stack until "finished()" has been called
 
-	if (reply->error() == QNetworkReply::NoError) {
+	if (reply->error() == QNetworkReply::NoError)
+	{
 		//success
-		
+		cout << "\n\n\n#### Success on Query ####\n\n\n";
 		writeLinks(reply);
 		delete reply;
 	}
 	else
 	{
 		//failure
+		cout << "\n\n\n#### Failure on Query ####\n\n\n";
 		qDebug() << "Failure" << reply->errorString();
 		delete reply;
 	}
@@ -54,7 +56,8 @@ void HTTP::writeLinks(QNetworkReply* reply)
 	ofstream myfile;
 
 	myfile.open("references.html");
-	
+	myfile << reply->readAll().constData();
+
 	/*//Convert HTML to XML - Tag strip
 	QXmlStreamReader xml(reply->readAll().constData());
 	QString textString;
@@ -72,8 +75,6 @@ void HTTP::writeLinks(QNetworkReply* reply)
 
 		}
 	}*/
-
-	qDebug() << reply->readAll().constData();
 
 	myfile.close();
 

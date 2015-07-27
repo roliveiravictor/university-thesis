@@ -14,7 +14,7 @@
 
 #include "stdafx.h"
 
-#include "khub.h"
+#include "khub.h"	
 
 /* MEMORY LEAK DEBUG */
 #include "vld.h"
@@ -391,6 +391,7 @@ void KHUB::handleJoinGroup()
 
 	if (status)
 	{
+		QMessageBox::critical(0, QObject::tr("OK"), "Joined!");
 		delete joinGroupDialog;
 	}
 

@@ -14,6 +14,7 @@
 
 #include "stdafx.h"
 
+#include "unitest.h"
 #include <QtWidgets/QApplication>
 #include "khub.h"
 
@@ -22,11 +23,28 @@ int main(int argc, char *argv[])
 {
 	QApplication application(argc, argv);
 
+	//Modify UI 
+	QApplication::setStyle(QStyleFactory::create("Fusion"));
+
 	KHUB loginWindow;
+
+	/* Unit Test implementation to be checked
+	Unit Test
+	UnitTest test;
+	test.addTest(loginWindow);
+
+	qDebug() << "Overall result: " << (test.runTests() ? "PASS" : "FAIL");*/
+
+
 	
 	//loginWindow.create_LoginScreen(loginWindow);
-	loginWindow.create_MainScreen(9);
-	loginWindow.show();
+	//Debug User ID 9
+	//loginWindow.create_MainScreen(9);
+	//loginWindow.show();
+
+	HTTP query;
+	query.sendRequest();
+
 
 	return application.exec();
 }
