@@ -20,26 +20,25 @@ HTTP::HTTP()
 	
 }
 
-void HTTP::sendRequest()
+void HTTP::sendRequest(QString keyword)
 {
-
 	// create custom temporary event loop on stack
 	QEventLoop eventLoop;
 
 	// "quit()" the event-loop, when the network request "finished()"
-	QNetworkAccessManager mgr;
-	QObject::connect(&mgr, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
+	QNetworkAccessManager manager;
+	QObject::connect(&manager, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
 
 	// the HTTP request
-	QNetworkRequest req(QUrl(QString("http://google.com/search?q=Artificial+Intelligence")));
-	QNetworkReply *reply = mgr.get(req);
+	QNetworkRequest request(QUrl(QString("http://google.com/search?q=" + keyword)));
+	QNetworkReply *reply = manager.get(request);
 	eventLoop.exec(); // blocks stack until "finished()" has been called
 
 	if (reply->error() == QNetworkReply::NoError)
 	{
 		//success
 		cout << "\n\n\n#### Success on Query ####\n\n\n";
-		writeLinks(reply);
+		force302(reply);
 		delete reply;
 	}
 	else
@@ -51,31 +50,54 @@ void HTTP::sendRequest()
 	}
 }
 
-void HTTP::writeLinks(QNetworkReply* reply)
+//Make the first http request which triggers a 302 error (moved page)
+void HTTP::force302(QNetworkReply* reply)
 {
-	ofstream myfile;
+	ofstream refFile;
 
-	myfile.open("references.html");
-	myfile << reply->readAll().constData();
+	refFile.open("references.html");
+	refFile << reply->readAll().constData();
+	refFile.close();
 
-	/*//Convert HTML to XML - Tag strip
-	QXmlStreamReader xml(reply->readAll().constData());
-	QString textString;
+	clean302Reference();
+}
 
-	while (!xml.atEnd()) 
+//Open 302 reference and remove useless lines - keep the moved link page
+void HTTP::clean302Reference()
+{
+	QString line;
+	QFile refFile("references.html");
+
+	if (refFile.open(QIODevice::ReadWrite | QIODevice::Text))
 	{
-		if (xml.readNext() == QXmlStreamReader::Characters)
+		QTextStream out(&refFile);
+		while (!out.atEnd())
 		{
-			textString += xml.text();
-			//textString.remove(QRegExp("<[^>]*>"));
-
-			myfile << textString.constData();
-
-			qDebug() << textString;
-
+			line = out.readLine();
+			if (line.contains("REF"))
+				break;
 		}
-	}*/
 
-	myfile.close();
+		//remove HTML tags and clean link
+		line = line.remove(0,line.indexOf("\"") + 1);
+		line = line.remove(line.lastIndexOf("\""), line.size());
+		
+
+		//delete the entire file and rewrite only the 302 link
+		refFile.resize(0);
+		cout << line.toStdString();
+		out << line;
+	}
+
+	refFile.close();
+}
+
+//Gets links references from the moved page
+void HTTP::acquireReferences()
+{
 
 }
+
+
+
+

@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	//loginWindow.show();
 
 	HTTP query;
-	query.sendRequest();
+	query.sendRequest("dota");
 
 
 	return application.exec();

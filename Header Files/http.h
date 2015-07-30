@@ -23,6 +23,7 @@
 #include <QUrlQuery>
 #include <QXmlStreamReader>
 #include <QString>
+#include <QtXml>
 
 #include <iostream>
 #include <fstream>
@@ -36,11 +37,16 @@ public:
 
 	HTTP();
 
-	void sendRequest();
+	void sendRequest(QString keyword);
 
 private:
 
-	void writeLinks(QNetworkReply* reply);
+	//302 http
+	void force302(QNetworkReply* reply);
+	void clean302Reference();
+
+	//main query
+	void acquireReferences();
 
 };
 
