@@ -37,16 +37,15 @@ public:
 
 	HTTP();
 
-	void sendRequest(QString keyword);
+	void sendRequest(QString keyword, bool Http302);
 
 private:
 
-	//302 http
-	void force302(QNetworkReply* reply);
+	//302 http error treatment
 	void clean302Reference();
 
-	//main query
-	void acquireReferences();
+	vector <QString> readReferences(QString path);
+	void writeReferences(QNetworkReply* reply, string path);
 
 };
 

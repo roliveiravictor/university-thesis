@@ -43,7 +43,10 @@ int main(int argc, char *argv[])
 	//loginWindow.show();
 
 	HTTP query;
-	query.sendRequest("dota");
+
+	//Send Request to throw 302 Http error - Moved Page
+	query.sendRequest("dota", true);
+	query.sendRequest(NULL, false);
 
 
 	return application.exec();
