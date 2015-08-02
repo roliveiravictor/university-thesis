@@ -11,9 +11,8 @@
 /*                                                                    */
 /**********************************************************************/
 
-
-#include <stdafx.h>
-#include <http.h>
+#include "stdafx.h"
+#include "http.h"
 
 HTTP::HTTP()
 {

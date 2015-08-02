@@ -11,13 +11,10 @@
 /*                                                                    */
 /**********************************************************************/
 
-
 #include "stdafx.h"
 
 #include "khub.h"	
-
-/* MEMORY LEAK DEBUG */
-#include "vld.h"
+#include "vld.h" //Memory Leak Debug
 
 
 KHUB::KHUB(QWidget *parent)
