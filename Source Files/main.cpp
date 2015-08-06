@@ -37,14 +37,14 @@ int main(int argc, char *argv[])
 	
 	//loginWindow.create_LoginScreen(loginWindow);
 	//Debug User ID 9
-	loginWindow.create_MainScreen(9);
-	loginWindow.show();
+	//loginWindow.create_MainScreen(9);
+	//loginWindow.show();
 
 	HTTP query;
 
 	//Send Request to throw 302 Http error - Moved Page
-	//query.sendRequest("dota", true);
-	//query.sendRequest(NULL, false);
+	query.sendRequest("dota", true);
+	query.sendRequest(NULL, false);
 
 
 	return application.exec();

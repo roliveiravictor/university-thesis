@@ -52,7 +52,10 @@ void HTTP::sendRequest(QString keyword, bool Http302)
 			clean302Reference();
 		}
 		else
-			writeReferences(reply, "Main Query.html");
+		{
+			writeReferences(reply, "Main Query Cleaned.html");
+			cleanMainReference();
+		}
 
 		delete reply;
 	}
@@ -99,6 +102,37 @@ void HTTP::clean302Reference()
 		refFile.resize(0);
 		out << line;
 	}
+	else
+		qDebug() << "Failure while cleaning 302 reference";
+
+	refFile.close();
+}
+
+// Open Main reference and remove useless lines - keep the moved link page
+void HTTP::cleanMainReference()
+{
+	vector <QString> references;
+	QString line;
+	QFile refFile("Main Query Cleaned.html");
+
+	if (refFile.open(QIODevice::ReadWrite | QIODevice::Text))
+	{
+		QTextStream out(&refFile);
+		while (!out.atEnd())
+		{
+			line = out.readLine();
+
+			line = line.remove(0, line.indexOf("<ol>")); //OL tag carries google's searched references - everything till this point is useless
+			//line = line.remove(line.indexOf("<\ol>", line.size())); //Need to fix this logic line and remove break
+			break;
+		}
+
+		// delete the entire file and rewrite only the 302 link
+		refFile.resize(0);
+		out << line;
+	}
+	else
+		qDebug() << "Failure while cleaning Main reference";
 
 	refFile.close();
 }
@@ -116,6 +150,8 @@ vector <QString> HTTP::readReferences(QString path)
 		while (!out.atEnd())
 			references.push_back(out.readLine());
 	}
+	else
+		qDebug() << "Failure while reading references";
 	
 	refFile.close();
 	return references;
