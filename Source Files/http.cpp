@@ -35,7 +35,7 @@ void HTTP::sendRequest(QString keyword, bool Http302)
 		request.setUrl(QUrl(QString("http://google.com/search?q=" + keyword))); // main query throws at first a 302 http error - needs two requests to fix this
 	else
 	{
-		vector <QString> aux = readReferences("302.html");
+		vector<QString> aux = readReferences("302.html");
 		request.setUrl(QUrl(aux.at(0))); // get 302 reference - only exists one, thus position 0
 	}
 		
@@ -104,14 +104,14 @@ void HTTP::clean302Reference()
 	}
 	else
 		qDebug() << "Failure while cleaning 302 reference";
-
+    
 	refFile.close();
 }
 
 // Open Main reference and remove useless lines - keep the moved link page
 void HTTP::cleanMainReference()
 {
-	vector <QString> references;
+	vector<QString> references;
 	QString line;
 	QFile refFile("Main Query Cleaned.html");
 
@@ -122,14 +122,22 @@ void HTTP::cleanMainReference()
 		{
 			line = out.readLine();
 
+            //begin
 			line = line.remove(0, line.indexOf("<ol>")); //OL tag carries google's searched references - everything till this point is useless
-			//line = line.remove(line.indexOf("<\ol>", line.size())); //Need to fix this logic line and remove break
-			break;
+
+            //end
+            if (line.contains("</ol>"))
+                line = line.remove(line.indexOf("</ol>"), line.size());
+
+            references.push_back(line);
 		}
 
-		// delete the entire file and rewrite only the 302 link
+		// delete the entire file and rewrite only cleaned references - fix accents
 		refFile.resize(0);
-		out << line;
+        for (auto writer = references.begin(); writer != references.end(); ++writer)
+            out << *writer;
+
+
 	}
 	else
 		qDebug() << "Failure while cleaning Main reference";
@@ -138,9 +146,9 @@ void HTTP::cleanMainReference()
 }
 
 // Gets links references
-vector <QString> HTTP::readReferences(QString path)
+vector<QString> HTTP::readReferences(QString path)
 {
-	vector <QString> references;
+	vector<QString> references;
 	QString line;
 	QFile refFile(path);
 

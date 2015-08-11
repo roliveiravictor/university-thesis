@@ -46,7 +46,7 @@ private:
 	void cleanMainReference();
 
 	//Read-write operations for references
-	vector <QString> readReferences(QString path);
+	vector<QString> readReferences(QString path);
 	void writeReferences(QNetworkReply* reply, string path);
 
 };
