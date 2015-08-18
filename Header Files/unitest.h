@@ -19,51 +19,41 @@
 #include <QCoreApplication>
 #include <QtTest>
 
-class UnitTest : public QObject
-{
-	Q_OBJECT
+class UnitTest : public QObject {
+  Q_OBJECT
 
-public:
+ public:
+  UnitTest() : m_overallResult(0){}
 
-	UnitTest()
-		: m_overallResult(0)
-	{}
+  //Add all tests to vector
+  void addTest(QObject * test) {
+    test->setParent(this);
+	m_tests.append(test);
+  }
 
-	//Add all tests to vector
-	void addTest(QObject * test)
-	{
-		test->setParent(this);
-		m_tests.append(test);
-	}
-
-	//Processes vector tests
-	bool runTests()
-	{
-		int argc = 0;
-		char * argv[] = { 0 };
-		QCoreApplication app(argc, argv);
-		QTimer::singleShot(0, this, SLOT(run()));
-		app.exec();
-
-		return m_overallResult == 0;
-	}
-
-private slots:
-
-	void run()
-	{
-		doRunTests();
-		QCoreApplication::instance()->quit();
-	}
-private:
+  //Processes vector tests
+  bool runTests() {
+    int argc = 0;
+	char * argv[] = { 0 };
 	
-	void doRunTests()
-	{
+    QCoreApplication app(argc, argv);
+	QTimer::singleShot(0, this, SLOT(run()));
+	app.exec();
+
+    return m_overallResult == 0;
+  }
+
+ private slots:
+  void run() {
+    doRunTests();
+	QCoreApplication::instance()->quit();
+  }
+ private:
+	void doRunTests() {
 		foreach(QObject * test, m_tests) {
 			m_overallResult |= QTest::qExec(test);
 		}
 	}
-
 	QList<QObject *> m_tests;
 	int m_overallResult;
 };

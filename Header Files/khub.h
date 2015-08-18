@@ -25,186 +25,182 @@
 #define FALSE 0
 #define TRUE 1
 
-class KHUB : public QMainWindow
-{
-	Q_OBJECT
+class KHUB : public QMainWindow {
+  Q_OBJECT
+  Q_ENUMS(CancelType)
 
-	Q_ENUMS(CancelType)
+ public:
+  KHUB(QWidget *parent = 0);
+  ~KHUB();
 
-public:
+  /******************/
+  /* Create Screens */
+  /******************/
 
-	KHUB(QWidget *parent = 0);
-	~KHUB();
+  void create_LoginScreen(KHUB& loginWindow);
+  void create_MainScreen(int user_id);
 
-	/******************/
-	/* Create Screens */
-	/******************/
-
-	void create_LoginScreen(KHUB& loginWindow);
-	void create_MainScreen(int user_id);
-
-	enum class CancelType
-	{
+	enum class CancelType {
 		cl_newGroup = 10,
 		cl_joinGroup = 11,
 		cl_search = 20,
 	};
 
-private:
+ private:
 
-	Ui::KHUBClass ui;
+  Ui::KHUBClass ui;
 
-	// Reference to global user id
-	int user_id;
+  // Reference to global user id
+  int user_id;
 
-	/****************/
-	/* KHUB Objects */
-	/****************/
+  /****************/
+  /* KHUB Objects */
+  /****************/
 
-	KHUB* mainWindow, *loginWindowPtr;
+  KHUB* mainWindow, *loginWindowPtr;
 
-	/******************/
-	/* Create Screens */
-	/******************/
+  /******************/
+  /* Create Screens */
+  /******************/
 
-	//Login Screens
-	void create_RegisterScreen();
+  //Login Screens
+  void create_RegisterScreen();
 
-	// Main Window Screens
-	//void create_MainScreen(int user_id);
-	void mainWindow_GroupScreen();
+  // Main Window Screens
+  //void create_MainScreen(int user_id);
+  void mainWindow_GroupScreen(bool isCreate);
 
-	/******************/
-	/* Dialog Objects */
-	/******************/
+  /******************/
+  /* Dialog Objects */
+  /******************/
 
-	QWidget* newGroupDialog, *joinGroupDialog, *searchDialog;
+  QWidget* newGroupDialog, *joinGroupDialog, *searchDialog;
 
-	/******************/
-	/* Create Dialogs */
-	/******************/
+  /******************/
+  /* Create Dialogs */
+  /******************/
 
-	void dialog_NewGroup();
-	void dialog_JoinGroup();
-	void dialog_Search();
+  void dialog_NewGroup();
+  void dialog_JoinGroup();
+  void dialog_Search();
 
 
-	/*****************/
-	/* Login Buttons */
-	/*****************/
+  /*****************/
+  /* Login Buttons */
+  /*****************/
 
-	QPushButton* loginBt, *registerBt = NULL, *cancelRegisterBt;
+  QPushButton* loginBt, *registerBt = NULL, *cancelRegisterBt;
 
-	/*******************/
-	/* Login TextField */
-	/*******************/
+  /*******************/
+  /* Login TextField */
+  /*******************/
 
-	QLineEdit* loginEdt, *passwordEdt, *loginConfirmEdt, *passwordConfirmEdt;
+  QLineEdit* loginEdt, *passwordEdt, *loginConfirmEdt, *passwordConfirmEdt;
 	
-	/***********************/
-	/* Main Window Buttons */
-	/***********************/
+  /***********************/
+  /* Main Window Buttons */
+  /***********************/
 
-	//Group Buttons
-	QPushButton* createGroupBt, *joinGroupBt;
+  //Group Buttons
+  QPushButton* createGroupBt, *joinGroupBt;
 
-	//Search Buttons
-	QPushButton* searchBt;
+  //Search Buttons
+  QPushButton* searchBt;
 
-	//General Buttons
-	QPushButton* cancelBt;
+  //General Buttons
+  QPushButton* cancelBt;
 	
-	/*************************/
-	/* Main Window TextField */
-	/*************************/
+  /*************************/
+  /* Main Window TextField */
+  /*************************/
 	
-	//Group TextField
-	QLineEdit* groupIdEdt, *groupNameEdt, *groupCategoryEdt, *groupSubjectEdt;
+  //Group TextField
+  QLineEdit* groupIdEdt, *groupNameEdt, *groupCategoryEdt, *groupSubjectEdt;
 		
-	//Search Textfield
-	QLineEdit* searchEdt;
+  //Search Textfield
+  QLineEdit* searchEdt;
 
-	/**********************************/
-	/* Create Main Window Components */
-	/*********************************/
+  /**********************************/
+  /* Create Main Window Components */
+  /*********************************/
 
-	void set_Menu();
-	void set_Actions();
+  void set_Menu();
+  void set_Actions();
+ 
+  /***********************/
+  /* Main Window Actions */
+  /***********************/
 
-	/***********************/
-	/* Main Window Actions */
-	/***********************/
+  // File Actions
+  QAction* exitAct, *logoutAct;
 
-	// File Actions
-	QAction* exitAct, *logoutAct;
+  // Groups Actions
+  QAction* createGroupAct, *joinGroupAct;
 
-	// Groups Actions
-	QAction* createGroupAct, *joinGroupAct;
+  // Search Actions
+  QAction* searchAct;
 
-	// Search Actions
-	QAction* searchAct;
+  /********************************************/
+  /* General Signal map for different senders */
+  /********************************************/
 
-	/********************************************/
-	/* General Signal map for different senders */
-	/********************************************/
+  QSignalMapper* signalMapper;
 
-	QSignalMapper* signalMapper;
+  /*******************/
+  /* General Layouts */
+  /*******************/
 
-	/*******************/
-	/* General Layouts */
-	/*******************/
-
-	QVBoxLayout* boxLayout;
+  QVBoxLayout* boxLayout;
 
 
-	/****************************/
-	/* General Components Setup */
-	/****************************/
+  /****************************/
+  /* General Components Setup */
+  /****************************/
 
-	void btSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
-	void btSetupInt(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value);
+  void btSetup(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
+  void btSetupInt(QPushButton** button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value);
 
-	void btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)());
-	void btBoxSetupInt(QPushButton** button, const QString name, void (KHUB::*fptr)(int parameter), int slot);
+  void btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)());
+  void btBoxSetupInt(QPushButton** button, const QString name, void (KHUB::*fptr)(int parameter), int slot);
 
-	void txtFieldSetup(QLineEdit** textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
+  void txtFieldSetup(QLineEdit** textField, const QString name, int posX, int posY, int width, int height, bool isPassword);
 
-	void txtFieldBoxSetup(QLineEdit** textField, const QString name, bool isPassword);
+  void txtFieldBoxSetup(QLineEdit** textField, const QString name, bool isPassword);
 
-/****************************************/
-/* QT C++ extension for pre-processment */
-/****************************************/
+ /****************************************/
+ /* QT C++ extension for pre-processment */
+ /****************************************/
 
-private slots:
+ private slots:
 
-	/**************************/
-	/* Login Screen Functions */
-	/**************************/
+  /**************************/
+  /* Login Screen Functions */
+  /**************************/
 
-	void handleReboot();
-	void handleDispose(int slot);
-	void handleLogin();
-	void handleRegister(int isRegister);
+  void handleReboot();
+  void handleDispose(int slot);
+  void handleLogin();
+  void handleRegister(int isRegister);
 
-	/*************************/
-	/* Main Window Functions */
-	/*************************/
+  /*************************/
+  /* Main Window Functions */
+  /*************************/
 	
-	// File Functions
-	void exit();
-	void logout();
+  // File Functions
+  void exit();
+  void logout();
 
-	// Groups  Functions
-	void createGroup();
-	void joinGroup();
+  // Groups  Functions
+  void createGroup();
+  void joinGroup();
 
-	void handleNewGroup();
-	void handleJoinGroup();
+  void handleNewGroup();
+  void handleJoinGroup();
 
-	// Search Functions 
-	void search();
+  // Search Functions 
+  void search();
 
-	void handleSearch();
+  void handleSearch();
 };
 
 #endif // KHUB_H

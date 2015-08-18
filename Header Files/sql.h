@@ -17,7 +17,6 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-
 /* C++ Connect Libraries from MySQL */
 #include "mysql_connection.h"
 #include <cppconn/driver.h>
@@ -34,51 +33,46 @@
 
 using namespace std;
 
-class SQL
-{
-
-public:
-
-	SQL();
-	~SQL();
+class SQL {
+ public:
+  SQL();
+  ~SQL();
 	
-	/******************/
-	/* Search Control */
-	/******************/
+  /******************/
+  /* Search Control */
+  /******************/
+  
+  bool search(QString keywords);
 
-	bool search(QString keywords);
+  /******************/
+  /* Group Control  */
+  /******************/
 
-	/******************/
-	/* Group Control  */
-	/******************/
+  bool createGroup(int user_id, QString name, QString category, QString subject);
+  bool joinGroup(int user_id, int group_id);
 
-	bool createGroup(int user_id, QString name, QString category, QString subject);
-	bool joinGroup(int user_id, int group_id);
+  /*****************/
+  /* Login Control */
+  /*****************/
 
-	/*****************/
-	/* Login Control */
-	/*****************/
+  int checkCredentials(QString login, QString password);
 
-	int checkCredentials(QString login, QString password);
+  /********************/
+  /* Register Control */
+  /********************/
 
-	/********************/
-	/* Register Control */
-	/********************/
+  bool registerUser(QString login, QString password);
+  bool checkUser(QString login);
 
-	bool registerUser(QString login, QString password);
-	bool checkUser(QString login);
-
-private:
-
-	// Map to acquire sql credential locally
-	map <int, string> dbAccess;
+ private:
+  // Map to acquire sql credential locally
+  map <int, string> dbAccess;
 	
-	// Local config file with DB access information
-	void databaseAccess();
+  // Local config file with DB access information
+  void databaseAccess();
 
-	// Close query and disconnect form DB
-	void closeDB(QSqlQuery query);
+  // Close query and disconnect form DB
+  void closeDB(QSqlQuery query);
 };
-
 
 #endif // sql_H
