@@ -35,9 +35,10 @@ int main(int argc, char *argv[]) {
 
 	
   //loginWindow.create_LoginScreen(loginWindow);
+  //loginWindow.show();
   //Debug User ID 9
   loginWindow.create_MainScreen(9);
-  loginWindow.show();
+  //loginWindow.show();
 
   HTTP query;
 

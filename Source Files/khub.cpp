@@ -16,6 +16,8 @@
 #include "khub.h"	
 #include "vld.h" //Memory Leak Debug
 
+//Global Pointer to handle main interface changes
+KHUB* mainWindowPtr;
 
 KHUB::KHUB(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -31,21 +33,26 @@ KHUB::~KHUB(){
 
 void KHUB::create_MainScreen(int user_id) {
   //Sets main full screen and shows
-  mainWindow = new KHUB();
-  mainWindow->setWindowState(mainWindow->windowState() ^ Qt::WindowMaximized);
+  mainWindowPtr = new KHUB();
+
+  mainWindowPtr->setWindowState(mainWindowPtr->windowState() ^ Qt::WindowMaximized);
 
   //Get user id reference from previous login window
-  mainWindow->user_id = user_id;
+  mainWindowPtr->user_id = user_id;
 
   //Remove default empty toolbar
-  QToolBar* tb = mainWindow->findChild<QToolBar *>(); 
+  QToolBar* tb = mainWindowPtr->findChild<QToolBar *>(); 
   
-  mainWindow->removeToolBar(tb);
-  mainWindow->set_Actions();
-  mainWindow->set_Menu();
-  mainWindow->show();
+  mainWindowPtr->removeToolBar(tb);
+  mainWindowPtr->set_Actions();
+  mainWindowPtr->set_Menu();
+
+  mainWindowPtr->show();
 
   delete tb;
+
+  //TEST LINE - REMOVE AFTER USE
+  mainWindowPtr->dialog_JoinGroup();
 }
 
 void KHUB::create_LoginScreen(KHUB& loginWindow) {
@@ -82,16 +89,28 @@ void KHUB::create_RegisterScreen() {
   txtFieldSetup(&passwordConfirmEdt, "Confirm Password", 115, 250, 200, 25, true);
 }
 
-void KHUB::mainWindow_GroupScreen(bool isCreate) {
-	//Check to see if group already exists and retrieve its information or start from a new one
-    //We will start with the first option
+void KHUB::create_GroupScreen(bool isCreate) {
+  QTabWidget *tabs = new QTabWidget();
 
-    if (isCreate) {
+  QWidget *localTab = new QWidget();
+  QWidget *sharedTab = new QWidget();
 
+  tabs->addTab(localTab, tr("Local"));
+  tabs->addTab(sharedTab, tr("Shared"));
+  QVBoxLayout *VBoxLayout = new QVBoxLayout();
+  VBoxLayout->addWidget(tabs);
+  QWidget *central = new QWidget();
+  central->setLayout(VBoxLayout);
+  
+  mainWindowPtr->setCentralWidget(central); //QMainWindows works only with central widget - see documentation
 
-    } else {
-
-    }
+  //Check to see if group already exists and retrieve its information or start from a new one
+  //We will start with the first option
+  if (isCreate) {
+      
+  } else {
+      
+  }
 }
 
 /*****************/
@@ -285,8 +304,8 @@ void KHUB::handleLogin() {
 	delete registerBt;
 	delete cancelRegisterBt;
   }
-  loginWindowPtr->close();
   create_MainScreen(user_id);	
+  loginWindowPtr->close();
   delete signalMapper;
   } else {
     QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
@@ -331,7 +350,7 @@ void KHUB::handleNewGroup() {
   if (status) {
 	delete newGroupDialog;
 	QMessageBox::information(0, QObject::tr("Success:"), "New group created.");
-	mainWindow_GroupScreen(true);
+	create_GroupScreen(true);
   } else {
     QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
   }
@@ -343,10 +362,10 @@ void KHUB::handleJoinGroup() {
 
   bool status = databaseConnection.joinGroup(user_id, 29); //debug groupId 29 groupId->text().toInt()
 
-  if (status)	{
+  if (status) {
     QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
 	delete joinGroupDialog;
-    mainWindow_GroupScreen(false);
+    create_GroupScreen(false);
   } else {
 	QMessageBox::critical(0, QObject::tr("Error"), "Could not create a find group to join.");
   }
