@@ -33,6 +33,7 @@
 #define KHUB_H
 
 #include <QtWidgets/QMainWindow>
+#include <qwebview.h>
 #include "ui_khub.h"
 #include "sql.h"
 #include "http.h"

@@ -52,7 +52,7 @@ void KHUB::create_MainScreen(int user_id) {
   delete tb;
 
   //TEST LINE - REMOVE AFTER USE
-  mainWindowPtr->dialog_JoinGroup();
+  mainWindowPtr->joinGroup();
 }
 
 void KHUB::create_LoginScreen(KHUB& loginWindow) {
@@ -101,9 +101,24 @@ void KHUB::create_GroupScreen(bool isCreate) {
   VBoxLayout->addWidget(tabs);
   QWidget *central = new QWidget();
   central->setLayout(VBoxLayout);
-  
-  mainWindowPtr->setCentralWidget(central); //QMainWindows works only with central widget - see documentation
 
+  //SET HTML reader
+  QVBoxLayout *webLayout = new QVBoxLayout();
+  QWebView *reader = new QWebView();
+  QString string = "<html><body><h1>HTML Previewer</h1>"
+      " <p>This example shows you how to use QWebView to"
+      " preview HTML data written in a QPlainTextEdit.</p>"
+      " </body></html>";
+  QUrl baseUrl;
+  //reader->setHtml(string, baseUrl);
+  //reader->load(QUrl("file:///D:/System/Programme%20%28x86%29/Source%20Tree%20Projects/Thesis/KHUB/KHUB/Main%20Query%20Cleaned.html"));
+  reader->load(QUrl("file:///Main Query Cleaned.html")); //find apropriated path to make it work
+
+  webLayout->addWidget(reader);
+
+  localTab->setLayout(webLayout);
+  mainWindowPtr->setCentralWidget(central); //QMainWindows works only with central widget - see documentation
+  
   //Check to see if group already exists and retrieve its information or start from a new one
   //We will start with the first option
   if (isCreate) {
