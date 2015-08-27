@@ -94,6 +94,49 @@ void KHUB::create_GroupScreen(bool isCreate) {
 
   QWidget *localTab = new QWidget();
   QWidget *sharedTab = new QWidget();
+ 
+  tabs->addTab(localTab, tr("Local"));
+  tabs->addTab(sharedTab, tr("Shared"));
+  
+  QGridLayout *localLayout = new QGridLayout();
+  QLabel *link = new QLabel();
+  link->setText("<a href=\"http://www.google.com/\">www.google.com</a>");
+  link->setTextFormat(Qt::RichText);
+  link->setTextInteractionFlags(Qt::TextBrowserInteraction);
+  link->setOpenExternalLinks(true);
+  localLayout->addWidget(link, 1, 0, 1, -1);
+  localTab->setLayout(localLayout);
+
+  QPushButton* upArrow = new QPushButton();
+  QIcon ButtonUp("Resources/Arrows/arrow.png");
+  upArrow->setIcon(ButtonUp);
+
+  QPushButton* open = new QPushButton("Open");
+
+  QPushButton* downArrow = new QPushButton();
+  QIcon ButtonDown("Resources/Arrows/downarrow.png");
+  downArrow->setIcon(ButtonDown);
+
+  localLayout->addWidget(upArrow, 0, 1, 1, 1);
+  localLayout->addWidget(open, 1, 1, 1, 1);
+  localLayout->addWidget(downArrow, 2, 1, 1, 1);
+
+  QWidget *central = new QWidget();
+  QVBoxLayout *mainLayout = new QVBoxLayout();
+
+  mainLayout->addWidget(tabs);
+  central->setLayout(mainLayout);
+    
+  mainWindowPtr->setCentralWidget(central);
+
+  //Make Open button for WebPreview
+    
+  /*WebPreview Ready to be Used - Standby code
+  
+  QTabWidget *tabs = new QTabWidget();
+
+  QWidget *localTab = new QWidget();
+  QWidget *sharedTab = new QWidget();
 
   tabs->addTab(localTab, tr("Local"));
   tabs->addTab(sharedTab, tr("Shared"));
@@ -111,13 +154,13 @@ void KHUB::create_GroupScreen(bool isCreate) {
       " </body></html>";
   QUrl baseUrl;
   //reader->setHtml(string, baseUrl);
-  //reader->load(QUrl("file:///D:/System/Programme%20%28x86%29/Source%20Tree%20Projects/Thesis/KHUB/KHUB/Main%20Query%20Cleaned.html"));
-  reader->load(QUrl("file:///Main Query Cleaned.html")); //find apropriated path to make it work
+  reader->load(QUrl("file:///D:/System/Programme%20%28x86%29/Source%20Tree%20Projects/Thesis/KHUB/KHUB/Main%20Query%20Cleaned.html"));
+  //reader->load(QUrl("file:///Main Query Cleaned.html")); //find apropriated path to make it work
 
   webLayout->addWidget(reader);
 
   localTab->setLayout(webLayout);
-  mainWindowPtr->setCentralWidget(central); //QMainWindows works only with central widget - see documentation
+  mainWindowPtr->setCentralWidget(central); //QMainWindows works only with central widget - see documentation*/
   
   //Check to see if group already exists and retrieve its information or start from a new one
   //We will start with the first option
@@ -312,15 +355,15 @@ void KHUB::handleLogin() {
 	delete passwordEdt;
 	delete loginBt;
 
-  // Check if any registration was created before clearing heap
-  if (registerBt == NULL) {
-	delete loginConfirmEdt;
-	delete passwordConfirmEdt;
-	delete registerBt;
-	delete cancelRegisterBt;
-  }
-  create_MainScreen(user_id);	
-  loginWindowPtr->close();
+    // Check if any registration was created before clearing heap
+    if (registerBt == NULL) {
+	  delete loginConfirmEdt;
+	  delete passwordConfirmEdt;
+	  delete registerBt;
+	  delete cancelRegisterBt;
+    }
+    create_MainScreen(user_id);	
+    loginWindowPtr->close();
   delete signalMapper;
   } else {
     QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
