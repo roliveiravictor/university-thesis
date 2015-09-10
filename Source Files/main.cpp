@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
   //Send Request to throw 302 Http error - Moved Page
   //query.sendRequest("dota", true);
-  //query.sendRequest(NULL, false);
+  query.sendRequest(NULL, false);
    
 
   return application.exec();

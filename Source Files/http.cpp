@@ -108,6 +108,7 @@ void HTTP::cleanMainReference() {
          line = line.remove(line.indexOf("</ol>"), line.size());
 
          references.push_back(line);
+         qDebug() << line << "/n/n";
     }
 
 	// delete the entire file and rewrite only cleaned references - fix accents

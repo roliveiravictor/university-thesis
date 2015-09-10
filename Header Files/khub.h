@@ -93,6 +93,12 @@ class KHUB : public QMainWindow {
   /* Dialog Objects */
   /******************/
 
+  /******************/
+  /*     Widgets    */
+  /******************/
+
+  QTabWidget *tabs;
+
   QWidget *newGroupDialog, *joinGroupDialog, *searchDialog;
 
   /******************/
@@ -171,6 +177,8 @@ class KHUB : public QMainWindow {
 
   QVBoxLayout *boxLayout;
 
+  QGridLayout *gridLayout;
+
 
   /****************************/
   /* General Components Setup */
@@ -200,6 +208,7 @@ class KHUB : public QMainWindow {
   void handleDispose(int slot);
   void handleLogin();
   void handleRegister(int isRegister);
+  void handleUrl();
 
   /*************************/
   /* Main Window Functions */
