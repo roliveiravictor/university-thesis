@@ -98,6 +98,8 @@ void HTTP::cleanMainReference() {
 
   if (refFile.open(QIODevice::ReadWrite | QIODevice::Text)) {
     QTextStream out(&refFile);
+
+    //Main Cleaning - This will remove most of the useless content
     while (!out.atEnd()) {
          line = out.readLine();
 
@@ -106,9 +108,29 @@ void HTTP::cleanMainReference() {
 
          //cleanning end
          line = line.remove(line.indexOf("</ol>"), line.size());
+    }
 
-         references.push_back(line);
-         qDebug() << line << "/n/n";
+    //Move cursor backward to its initial position
+    out.seek(0);
+
+    //Surgical Cleaning - This will acquire the references to be writen
+    while (!out.atEnd()) {
+        line = out.readLine();
+
+        /*************************************************************************************************/
+        /* This cleaning can be improved - As it's, it retrieves 70% of the references provided by google*/
+        /*************************************************************************************************/
+        line = line.remove(0, line.indexOf("url?q="));
+        line = line.remove(line.indexOf("\">"), line.size());
+        
+        //Discard lines without references
+        if (!line.contains("url?q=") || !line.contains("http"))
+          line = "";
+        else
+          //Replace found references with initial "url?q=" for "" (nothing) - This last line will make references ready for usage
+          line = line.replace("url?q=", "") + "\n";
+
+        references.push_back(line);
     }
 
 	// delete the entire file and rewrite only cleaned references - fix accents
