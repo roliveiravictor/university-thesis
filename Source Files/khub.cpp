@@ -92,36 +92,53 @@ void KHUB::create_RegisterScreen() {
 void KHUB::create_GroupScreen(bool isCreate) {
   tabs = new QTabWidget();
 
+  gridLayout = new QGridLayout();
+  
   QWidget *localTab = new QWidget();
   QWidget *sharedTab = new QWidget();
- 
-  tabs->addTab(localTab, tr("Local"));
-  tabs->addTab(sharedTab, tr("Shared"));
-  
-  gridLayout = new QGridLayout();
-  QLabel *link = new QLabel();
-  link->setText("<a href=\"http://www.google.com/\">www.google.com</a>"); //NEXT STEP - Read references from file to set text here
-  link->setTextFormat(Qt::RichText);
-  link->setTextInteractionFlags(Qt::TextBrowserInteraction);
-  link->setOpenExternalLinks(true);
-  gridLayout->addWidget(link, 1, 0, 1, -1);
+
   localTab->setLayout(gridLayout);
 
-  QPushButton* upArrow = new QPushButton();
-  QIcon ButtonUp("Resources/Arrows/arrow.png");
-  upArrow->setIcon(ButtonUp);
+  QScrollArea *scrollLocal = new QScrollArea();
+  scrollLocal->setWidgetResizable(true);
+  scrollLocal->setWidget(localTab);
 
-  QPushButton* open = new QPushButton("Open");
-  btSetup(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl);
+  tabs->addTab(scrollLocal, tr("Local"));
+  tabs->addTab(sharedTab, tr("Shared"));
+  
+  HTTP reader;
+  vector<QString> references;
 
-  QPushButton* downArrow = new QPushButton();
-  QIcon ButtonDown("Resources/Arrows/downarrow.png");
-  downArrow->setIcon(ButtonDown);
+  references = reader.readReferences("Main Query Cleaned.txt");
 
-  gridLayout->addWidget(upArrow, 0, 1, 1, 1, Qt::AlignBottom);
-  gridLayout->addWidget(open, 1, 1, 1, 1);
-  gridLayout->addWidget(downArrow, 2, 1, 1, 1, Qt::AlignTop);
+  int componentsPos = 1;
 
+  for (int i = 0; i < references.size(); i++){
+    QLabel *link = new QLabel();
+    link->setText("<a href=\"" + references.at(i) + "\">" + references.at(i) + "</a>"); //NEXT STEP - Read references from file to set text here
+    link->setTextFormat(Qt::RichText);
+    link->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    link->setOpenExternalLinks(true);
+
+    QPushButton* upArrow = new QPushButton();
+    QIcon ButtonUp("Resources/Arrows/arrow.png");
+    upArrow->setIcon(ButtonUp);
+
+    QPushButton* open = new QPushButton("Open");
+    btSetup(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl);
+
+    QPushButton* downArrow = new QPushButton();
+    QIcon ButtonDown("Resources/Arrows/downarrow.png");
+    downArrow->setIcon(ButtonDown);
+
+    gridLayout->addWidget(link, componentsPos, 0, 1, -1);
+    gridLayout->addWidget(upArrow, componentsPos-1, 1, 1, 1, Qt::AlignBottom);
+    gridLayout->addWidget(open, componentsPos, 1, 1, 1);
+    gridLayout->addWidget(downArrow, componentsPos+1, 1, 1, 1, Qt::AlignTop);
+
+    componentsPos = componentsPos + 4; 
+  }
+  
   QWidget *central = new QWidget();
   QVBoxLayout *mainLayout = new QVBoxLayout();  
 
@@ -129,25 +146,6 @@ void KHUB::create_GroupScreen(bool isCreate) {
   central->setLayout(mainLayout);
     
   mainWindowPtr->setCentralWidget(central);
-
-  //Make Open button for WebPreview
-     
-  //WebPreview Ready to be Used - Standby code
-  /*
-  QTabWidget *tabs = new QTabWidget();
-
-  QWidget *localTab = new QWidget();
-  QWidget *sharedTab = new QWidget();
-
-  tabs->addTab(localTab, tr("Local"));
-  tabs->addTab(sharedTab, tr("Shared"));
-  QVBoxLayout *VBoxLayout = new QVBoxLayout();
-  VBoxLayout->addWidget(tabs);
-  QWidget *central = new QWidget();
-  central->setLayout(VBoxLayout);
-
- 
-  mainWindowPtr->setCentralWidget(central); //QMainWindows works only with central widget - see documentation*/
   
   //Check to see if group already exists and retrieve its information or start from a new one
   //We will start with the first option
@@ -435,12 +433,7 @@ void KHUB::handleUrl(){
   //SET HTML reader
   QVBoxLayout *webLayout = new QVBoxLayout();
   QWebView *reader = new QWebView();
-  QString string = "<html><body><h1>HTML Previewer</h1>"
-      " <p>This example shows you how to use QWebView to"
-      " preview HTML data written in a QPlainTextEdit.</p>"
-      " </body></html>";
-  QUrl baseUrl;
-  //reader->setHtml(string, baseUrl);
+
   reader->load(QUrl("http://www.google.com.br"));
   //reader->load(QUrl("file:///D:/System/Programme%20%28x86%29/Source%20Tree%20Projects/Thesis/KHUB/KHUB/Main%20Query%20Cleaned.html"));
   //reader->load(QUrl("file:///Main Query Cleaned.html")); //find apropriated path to make it work

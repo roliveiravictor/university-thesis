@@ -45,7 +45,7 @@ void HTTP::sendRequest(QString keyword, bool Http302) {
 	  writeReferences(reply, "302.html");
 	  clean302Reference();
 	} else {
-	  writeReferences(reply, "Main Query Cleaned.html");
+	  writeReferences(reply, "Main Query Cleaned.txt");
 	  cleanMainReference();
 	}
     delete reply;
@@ -94,7 +94,7 @@ void HTTP::clean302Reference() {
 void HTTP::cleanMainReference() {
   vector<QString> references;
   QString line;
-  QFile refFile("Main Query Cleaned.html");
+  QFile refFile("Main Query Cleaned.txt");
 
   if (refFile.open(QIODevice::ReadWrite | QIODevice::Text)) {
     QTextStream out(&refFile);
@@ -121,7 +121,7 @@ void HTTP::cleanMainReference() {
         /* This cleaning can be improved - As it's, it retrieves 70% of the references provided by google*/
         /*************************************************************************************************/
         line = line.remove(0, line.indexOf("url?q="));
-        line = line.remove(line.indexOf("\">"), line.size());
+        line = line.remove(line.indexOf("&amp;sa"), line.size());
         
         //Discard lines without references
         if (!line.contains("url?q=") || !line.contains("http"))
@@ -130,6 +130,7 @@ void HTTP::cleanMainReference() {
           //Replace found references with initial "url?q=" for "" (nothing) - This last line will make references ready for usage
           line = line.replace("url?q=", "") + "\n";
 
+        qDebug() << line;
         references.push_back(line);
     }
 

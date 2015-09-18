@@ -36,13 +36,14 @@ class HTTP {
 
   void sendRequest(QString keyword, bool Http302);
 
+  //Read-write operations for references
+  vector<QString> readReferences(QString path);
+
  private:
   //HTML reference links parsing
   void clean302Reference();
   void cleanMainReference();
 
-  //Read-write operations for references
-  vector<QString> readReferences(QString path);
   void writeReferences(QNetworkReply* reply, string path);
 };
 
