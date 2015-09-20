@@ -66,7 +66,7 @@ void KHUB::create_LoginScreen(KHUB& loginWindow) {
 	
 
   btSetup(&loginBt, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
-  btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, FALSE);
+  btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, FALSE, (int) ButtonHandler::hl_Register);
 	
   txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
   txtFieldSetup(&passwordEdt, "Password", 115, 150, 200, 25, true);
@@ -81,7 +81,7 @@ void KHUB::create_RegisterScreen() {
   registerBt->close();
 
   btSetup(&cancelRegisterBt, "Cancel", 225, 300, 100, 25, &KHUB::handleReboot);
-  btSetupInt(&registerBt, "Register", 100, 300, 100, 25, &KHUB::handleRegister, TRUE);
+  btSetupInt(&registerBt, "Register", 100, 300, 100, 25, &KHUB::handleRegister, TRUE, (int)ButtonHandler::hl_Register);
 
   txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
   txtFieldSetup(&loginConfirmEdt, "Confirm Username", 115, 150, 200, 25, false);
@@ -90,6 +90,7 @@ void KHUB::create_RegisterScreen() {
 }
 
 void KHUB::create_GroupScreen(bool isCreate) {
+  signalMapper = new QSignalMapper(this);
   tabs = new QTabWidget();
 
   gridLayout = new QGridLayout();
@@ -107,36 +108,40 @@ void KHUB::create_GroupScreen(bool isCreate) {
   tabs->addTab(sharedTab, tr("Shared"));
   
   HTTP reader;
-  vector<QString> references;
 
-  references = reader.readReferences("Main Query Cleaned.txt");
+  localUrl = reader.readReferences("Main Query Cleaned.txt");
 
   int componentsPos = 1;
 
-  for (int i = 0; i < references.size(); i++){
+  for (int pos = 0; pos < localUrl.size(); pos++){
     QLabel *link = new QLabel();
-    link->setText("<a href=\"" + references.at(i) + "\">" + references.at(i) + "</a>"); //NEXT STEP - Read references from file to set text here
+    link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>"); //NEXT STEP - Read references from file to set text here
     link->setTextFormat(Qt::RichText);
     link->setTextInteractionFlags(Qt::TextBrowserInteraction);
     link->setOpenExternalLinks(true);
 
-    QPushButton* upArrow = new QPushButton();
+    QPushButton *upArrow = new QPushButton();
     QIcon ButtonUp("Resources/Arrows/arrow.png");
     upArrow->setIcon(ButtonUp);
 
-    QPushButton* open = new QPushButton("Open");
-    btSetup(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl);
+    QPushButton *open = new QPushButton("Open");
+    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, (int) pos, (int) ButtonHandler::hl_OpenUrl);
 
-    QPushButton* downArrow = new QPushButton();
+    QPushButton *downArrow = new QPushButton();
     QIcon ButtonDown("Resources/Arrows/downarrow.png");
     downArrow->setIcon(ButtonDown);
 
-    gridLayout->addWidget(link, componentsPos, 0, 1, -1);
-    gridLayout->addWidget(upArrow, componentsPos-1, 1, 1, 1, Qt::AlignBottom);
-    gridLayout->addWidget(open, componentsPos, 1, 1, 1);
-    gridLayout->addWidget(downArrow, componentsPos+1, 1, 1, 1, Qt::AlignTop);
+    QLabel *separator = new QLabel();
+    QLabel *guider = new QLabel("<----------------------------------------------------------------------------------------------------------------------------------------------------->");
 
-    componentsPos = componentsPos + 4; 
+    gridLayout->addWidget(link, componentsPos, 0, 1, -1);
+    gridLayout->addWidget(guider, componentsPos, 1, 1, -1);
+    gridLayout->addWidget(upArrow, componentsPos-1, 2, 1, 1, Qt::AlignBottom);
+    gridLayout->addWidget(open, componentsPos, 2, 1, 1);
+    gridLayout->addWidget(downArrow, componentsPos+1, 2, 1, 1, Qt::AlignTop);
+    gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
+
+    componentsPos = componentsPos + 5; 
   }
   
   QWidget *central = new QWidget();
@@ -164,7 +169,7 @@ void KHUB::dialog_NewGroup() {
   newGroupDialog = new QWidget();
   boxLayout = new QVBoxLayout(newGroupDialog);
 
-  // Mapper to handle all main screen signals ##### FIX THIS
+  // Mapper to handle all main screen signals ##### NOT THE BEST SOLUTION - FIX THIS
   signalMapper = new QSignalMapper(this);
 
   newGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
@@ -322,7 +327,9 @@ void KHUB::handleDispose(int slot) {
 			break;
 
 		  default:
-		    QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose");
+		    QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose!");
+            
+            qDebug() << slot;
 	}
 }
 
@@ -420,7 +427,7 @@ void KHUB::handleSearch() {
   QMessageBox::critical(0, QObject::tr("Error"), "Here.");
 }
 
-void KHUB::handleUrl(){
+void KHUB::handleUrl(int reference){
   QWidget* browserTab = new QWidget();
   tabs->addTab(browserTab, tr("Navegador"));
   tabs->setCurrentWidget(browserTab);
@@ -434,12 +441,8 @@ void KHUB::handleUrl(){
   QVBoxLayout *webLayout = new QVBoxLayout();
   QWebView *reader = new QWebView();
 
-  reader->load(QUrl("http://www.google.com.br"));
-  //reader->load(QUrl("file:///D:/System/Programme%20%28x86%29/Source%20Tree%20Projects/Thesis/KHUB/KHUB/Main%20Query%20Cleaned.html"));
-  //reader->load(QUrl("file:///Main Query Cleaned.html")); //find apropriated path to make it work
-
+  reader->load(QUrl(localUrl.at(reference)));
   webLayout->addWidget(reader);
-
   browserTab->setLayout(webLayout);
 }
 
@@ -454,14 +457,17 @@ void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY,
   connect(*button, &QPushButton::released, this, fptr);
 }
 
-void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value) {
+void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value, int handler) {
   *button = new QPushButton(name, this);
   (*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
   connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
   signalMapper->setMapping(*button, value);
 
-  connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
+  if ((int)ButtonHandler::hl_Register==handler)
+    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
+  else
+    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
 }
 
 void KHUB::btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)()) {

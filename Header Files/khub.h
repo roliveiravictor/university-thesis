@@ -65,12 +65,21 @@ class KHUB : public QMainWindow {
 		cl_search = 20,
 	};
 
+    enum class ButtonHandler {
+
+        hl_Register = 1,
+        hl_OpenUrl = 2,
+    };
+
  private:
 
   Ui::KHUBClass ui;
 
   // Reference to global user id
   int user_id;
+
+  // Reference to local Urls
+  vector<QString> localUrl;
 
   /****************/
   /* KHUB Objects */
@@ -185,7 +194,7 @@ class KHUB : public QMainWindow {
   /****************************/
 
   void btSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
-  void btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value);
+  void btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value, int handler);
 
   void btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)());
   void btBoxSetupInt(QPushButton **button, const QString name, void (KHUB::*fptr)(int parameter), int slot);
@@ -208,7 +217,7 @@ class KHUB : public QMainWindow {
   void handleDispose(int slot);
   void handleLogin();
   void handleRegister(int isRegister);
-  void handleUrl();
+  void handleUrl(int reference);
 
   /*************************/
   /* Main Window Functions */
