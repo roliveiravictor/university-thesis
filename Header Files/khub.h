@@ -60,15 +60,15 @@ class KHUB : public QMainWindow {
   void create_MainScreen(int user_id);
 
 	enum class CancelType {
-		cl_newGroup = 10,
-		cl_joinGroup = 11,
-		cl_search = 20,
+      cl_newGroup = 10,
+	  cl_joinGroup = 11,
+	  cl_search = 20,
 	};
 
     enum class ButtonHandler {
-
         hl_Register = 1,
         hl_OpenUrl = 2,
+        hl_DisposeBrowser = 3,
     };
 
  private:
@@ -95,7 +95,6 @@ class KHUB : public QMainWindow {
   void create_RegisterScreen();
 
   // Main Window Screens
-  //void create_MainScreen(int user_id);
   void create_GroupScreen(bool isCreate);
 
   /******************/
@@ -108,7 +107,7 @@ class KHUB : public QMainWindow {
 
   QTabWidget *tabs;
 
-  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog;
+  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab=NULL;
 
   /******************/
   /* Create Dialogs */
@@ -123,7 +122,7 @@ class KHUB : public QMainWindow {
   /* Login Buttons */
   /*****************/
 
-  QPushButton *loginBt, *registerBt = NULL, *cancelRegisterBt;
+  QPushButton *loginBt, *registerBt = NULL, *cancelRegisterBt, *closeBrowser;
 
   /*******************/
   /* Login TextField */
@@ -230,6 +229,7 @@ class KHUB : public QMainWindow {
   // Groups  Functions
   void createGroup();
   void joinGroup();
+  void newBrowser();
 
   void handleNewGroup();
   void handleJoinGroup();

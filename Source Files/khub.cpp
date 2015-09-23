@@ -115,7 +115,7 @@ void KHUB::create_GroupScreen(bool isCreate) {
 
   for (int pos = 0; pos < localUrl.size(); pos++){
     QLabel *link = new QLabel();
-    link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>"); //NEXT STEP - Read references from file to set text here
+    link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>");
     link->setTextFormat(Qt::RichText);
     link->setTextInteractionFlags(Qt::TextBrowserInteraction);
     link->setOpenExternalLinks(true);
@@ -325,11 +325,16 @@ void KHUB::handleDispose(int slot) {
 		  case (int) CancelType::cl_search:
 		    delete searchDialog;
 			break;
+          
+          case (int) ButtonHandler::hl_DisposeBrowser:
+              //Delete tab for closing and set it to NULL for new opening
+              delete browserTab;
+              delete closeBrowser;
+              browserTab = NULL;
+              break;
 
 		  default:
-		    QMessageBox::critical(0, QObject::tr("Error"), "Error on screen dispose!");
-            
-            qDebug() << slot;
+		    qDebug() << "None slot to delete";
 	}
 }
 
@@ -428,15 +433,14 @@ void KHUB::handleSearch() {
 }
 
 void KHUB::handleUrl(int reference){
-  QWidget* browserTab = new QWidget();
-  tabs->addTab(browserTab, tr("Navegador"));
-  tabs->setCurrentWidget(browserTab);
-
-  //Button for closing tabs - Needs to connect slot
-  QPushButton *closeTab = new QPushButton("x");
-  closeTab->resize(25, 25);
-  tabs->tabBar()->setTabButton(2, QTabBar::RightSide, closeTab); //First argument "2" means tab position
-  
+    if (browserTab == NULL){
+      signalMapper = new QSignalMapper(this); //##### MEMORY LEAK - FIX THIS
+      newBrowser();
+    }
+    else {
+      delete browserTab;
+      newBrowser();
+  }
   //SET HTML reader
   QVBoxLayout *webLayout = new QVBoxLayout();
   QWebView *reader = new QWebView();
@@ -464,10 +468,17 @@ void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int po
   connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
   signalMapper->setMapping(*button, value);
 
-  if ((int)ButtonHandler::hl_Register==handler)
-    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
-  else
-    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
+  switch (handler) {
+    case (int) ButtonHandler::hl_Register:
+        connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
+        break;
+    case (int) ButtonHandler::hl_OpenUrl:
+        connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
+        break;
+    case (int) ButtonHandler::hl_DisposeBrowser:
+        connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
+        break;
+    }
 }
 
 void KHUB::btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)()) {
@@ -507,5 +518,17 @@ void KHUB::txtFieldBoxSetup(QLineEdit **textField, const QString hint, bool isPa
   if (isPassword)
     (*textField)->setEchoMode(passwordEdt->Password);
 }
+
+void KHUB::newBrowser(){
+    browserTab = new QWidget();
+    tabs->addTab(browserTab, tr("Navegador"));
+    tabs->setCurrentWidget(browserTab);
+
+    closeBrowser = new QPushButton();
+    //Might seems non sense to overload a fucntion with the same parameter but there are cases where they nedd to be different
+    btSetupInt(&closeBrowser, "x", 0, 0, 25, 25, &KHUB::handleDispose, (int)ButtonHandler::hl_DisposeBrowser, (int)ButtonHandler::hl_DisposeBrowser); 
+    tabs->tabBar()->setTabButton(2, QTabBar::RightSide, closeBrowser); //First argument "2" means tab position
+}
+    
 
 

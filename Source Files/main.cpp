@@ -23,6 +23,10 @@ int main(int argc, char *argv[]) {
   //Modify UI 
   QApplication::setStyle(QStyleFactory::create("Fusion"));
 
+  //Enable plugins for native browser - Helps to avoid crash due to a known bug by Qt at https://bugreports.qt.io/browse/QTBUG-34572 and also in a lot of other reports
+  QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+  QWebSettings::globalSettings()->setAttribute(QWebSettings::AutoLoadImages, true);
+
   KHUB loginWindow;
 
   /* Unit Test implementation to be checked
