@@ -73,6 +73,9 @@ class KHUB : public QMainWindow {
 
  private:
 
+  //Check whether user is grouped or not
+  bool isGrouped = false;
+
   Ui::KHUBClass ui;
 
   // Reference to global user id
@@ -107,7 +110,7 @@ class KHUB : public QMainWindow {
 
   QTabWidget *tabs;
 
-  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab=NULL;
+  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab = NULL;
 
   /******************/
   /* Create Dialogs */

@@ -35,6 +35,8 @@ void KHUB::create_MainScreen(int user_id) {
   //Sets main full screen and shows
   mainWindowPtr = new KHUB();
 
+  //Application name written on my Thesis
+  mainWindowPtr->setWindowTitle("FCE");
   mainWindowPtr->setWindowState(mainWindowPtr->windowState() ^ Qt::WindowMaximized);
 
   //Get user id reference from previous login window
@@ -52,7 +54,8 @@ void KHUB::create_MainScreen(int user_id) {
   delete tb;
 
   //TEST LINE - REMOVE AFTER USE
-  mainWindowPtr->joinGroup();
+  //mainWindowPtr->joinGroup();
+  mainWindowPtr->dialog_Search();
 }
 
 void KHUB::create_LoginScreen(KHUB& loginWindow) {
@@ -107,7 +110,8 @@ void KHUB::create_GroupScreen(bool isCreate) {
   tabs->addTab(scrollLocal, tr("Local"));
   tabs->addTab(sharedTab, tr("Shared"));
   
-  HTTP reader;
+  //This needs to go after a search - Working on it
+ /* HTTP reader;
 
   localUrl = reader.readReferences("Main Query Cleaned.txt");
 
@@ -142,7 +146,7 @@ void KHUB::create_GroupScreen(bool isCreate) {
     gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
 
     componentsPos = componentsPos + 5; 
-  }
+  }*/
   
   QWidget *central = new QWidget();
   QVBoxLayout *mainLayout = new QVBoxLayout();  
@@ -209,23 +213,27 @@ void KHUB::dialog_JoinGroup() {
 }
 
 void KHUB::dialog_Search() {
-  searchDialog = new QWidget();
-  boxLayout = new QVBoxLayout(searchDialog);
- 
-  signalMapper = new QSignalMapper(this);
+  if (isGrouped){
+    searchDialog = new QWidget();
+    boxLayout = new QVBoxLayout(searchDialog);
 
-  searchDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
-  searchDialog->setWindowModality(Qt::ApplicationModal);
-  searchDialog->setFixedSize(400, 300);
-  searchDialog->setWindowTitle("Serarch");
+    signalMapper = new QSignalMapper(this);
 
-  txtFieldBoxSetup(&groupIdEdt, "Type Keywords to Search", false);
- 
-  btBoxSetup(&searchBt, "Search", &KHUB::handleSearch);
-  btBoxSetupInt(&cancelBt, "Cancel", &KHUB::handleDispose, (int) CancelType::cl_search);
+    searchDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
+    searchDialog->setWindowModality(Qt::ApplicationModal);
+    searchDialog->setFixedSize(400, 300);
+    searchDialog->setWindowTitle("Serarch");
 
-  searchDialog->setLayout(boxLayout);
-  searchDialog->show();
+    txtFieldBoxSetup(&searchEdt, "Type Keywords to Search", false);
+
+    btBoxSetup(&searchBt, "Search", &KHUB::handleSearch);
+    btBoxSetupInt(&cancelBt, "Cancel", &KHUB::handleDispose, (int)CancelType::cl_search);
+
+    searchDialog->setLayout(boxLayout);
+    searchDialog->show();
+  } else {
+    QMessageBox::critical(0, QObject::tr("Error"), "Before searching for something, first join a group.");
+  }
 }
 
 /**************/
@@ -419,6 +427,7 @@ void KHUB::handleJoinGroup() {
 
   if (status) {
     QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
+    isGrouped = true;
 	delete joinGroupDialog;
     create_GroupScreen(false);
   } else {
@@ -429,7 +438,11 @@ void KHUB::handleJoinGroup() {
 // Make a research
 
 void KHUB::handleSearch() {
-  QMessageBox::critical(0, QObject::tr("Error"), "Here.");
+  HTTP query;
+
+  //Send Request to throw 302 Http error - Moved Page
+  query.sendRequest("chelsea", true);
+  query.sendRequest(NULL, false);
 }
 
 void KHUB::handleUrl(int reference){

@@ -20,7 +20,7 @@
 int main(int argc, char *argv[]) {
   QApplication application(argc, argv);
 
-  //Modify UI 
+  //Modifies UI - Esthetic purposes
   QApplication::setStyle(QStyleFactory::create("Fusion"));
 
   //Enable plugins for native browser - Helps to avoid crash due to a known bug by Qt at https://bugreports.qt.io/browse/QTBUG-34572 and also in a lot of other reports
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   loginWindow.create_MainScreen(9);
   //loginWindow.show();
 
-  HTTP query;
+  //HTTP query;
 
   //Send Request to throw 302 Http error - Moved Page
   //query.sendRequest("dota", true);
