@@ -17,14 +17,14 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-/* C++ Connect Libraries from MySQL */
+// C++ Connect Libraries from MySQL
 #include "mysql_connection.h"
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 
-/* Standard C++ includes */
+// Standard C++ includes 
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>

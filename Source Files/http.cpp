@@ -99,21 +99,21 @@ void HTTP::cleanMainReference() {
   if (refFile.open(QIODevice::ReadWrite | QIODevice::Text)) {
     QTextStream out(&refFile);
 
-    //Main Cleaning - This will remove most of the useless content
+    // Main Cleaning - This will remove most of the useless content
     while (!out.atEnd()) {
          line = out.readLine();
 
-         //cleanning begin
-	     line = line.remove(0, line.indexOf("<ol>")); //OL tag carries google's searched references - everything till this point is useless
+         // cleanning begin
+	     line = line.remove(0, line.indexOf("<ol>")); // OL tag carries google's searched references - everything till this point is useless
 
-         //cleanning end
+         // cleanning end
          line = line.remove(line.indexOf("</ol>"), line.size());
     }
 
-    //Move cursor backward to its initial position
+    // Move cursor backward to its initial position
     out.seek(0);
 
-    //Surgical Cleaning - This will acquire the references to be writen
+    // Surgical Cleaning - This will acquire the references to be writen
     while (!out.atEnd()) {
         line = out.readLine();
 
@@ -123,11 +123,11 @@ void HTTP::cleanMainReference() {
         line = line.remove(0, line.indexOf("url?q="));
         line = line.remove(line.indexOf("&amp;sa"), line.size());
         
-        //Discard lines without references
+        // Discard lines without references
         if (!line.contains("url?q=") || !line.contains("http"))
           line = "";
         else
-          //Replace found references with initial "url?q=" for "" (nothing) - This last line will make references ready for usage
+          // Replace found references with initial "url?q=" for "" (nothing) - This last line will make references ready for usage
           line = line.replace("url?q=", "") + "\n";
 
         qDebug() << line;

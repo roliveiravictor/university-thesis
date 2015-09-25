@@ -14,9 +14,9 @@
 #include "stdafx.h"
 
 #include "khub.h"	
-#include "vld.h" //Memory Leak Debug
+#include "vld.h" // Memory Leak Debug
 
-//Global Pointer to handle main interface changes
+// Global Pointer to handle main interface changes
 KHUB* mainWindowPtr;
 
 KHUB::KHUB(QWidget *parent) : QMainWindow(parent) {
@@ -32,17 +32,17 @@ KHUB::~KHUB(){
 /*****************/
 
 void KHUB::create_MainScreen(int user_id) {
-  //Sets main full screen and shows
+  // Sets main full screen and shows
   mainWindowPtr = new KHUB();
 
-  //Application name written on my Thesis
+  // Application name written on my Thesis
   mainWindowPtr->setWindowTitle("FCE");
   mainWindowPtr->setWindowState(mainWindowPtr->windowState() ^ Qt::WindowMaximized);
 
-  //Get user id reference from previous login window
+  // Get user id reference from previous login window
   mainWindowPtr->user_id = user_id;
 
-  //Remove default empty toolbar
+  // Remove default empty toolbar
   QToolBar* tb = mainWindowPtr->findChild<QToolBar *>(); 
   
   mainWindowPtr->removeToolBar(tb);
@@ -53,7 +53,7 @@ void KHUB::create_MainScreen(int user_id) {
 
   delete tb;
 
-  //TEST LINE - REMOVE AFTER USE
+  // TEST LINE - REMOVE AFTER USE
   //mainWindowPtr->joinGroup();
   mainWindowPtr->dialog_Search();
 }
@@ -110,44 +110,6 @@ void KHUB::create_GroupScreen(bool isCreate) {
   tabs->addTab(scrollLocal, tr("Local"));
   tabs->addTab(sharedTab, tr("Shared"));
   
-  //This needs to go after a search - Working on it
- /* HTTP reader;
-
-  localUrl = reader.readReferences("Main Query Cleaned.txt");
-
-  int componentsPos = 1;
-
-  for (int pos = 0; pos < localUrl.size(); pos++){
-    QLabel *link = new QLabel();
-    link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>");
-    link->setTextFormat(Qt::RichText);
-    link->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    link->setOpenExternalLinks(true);
-
-    QPushButton *upArrow = new QPushButton();
-    QIcon ButtonUp("Resources/Arrows/arrow.png");
-    upArrow->setIcon(ButtonUp);
-
-    QPushButton *open = new QPushButton("Open");
-    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, (int) pos, (int) ButtonHandler::hl_OpenUrl);
-
-    QPushButton *downArrow = new QPushButton();
-    QIcon ButtonDown("Resources/Arrows/downarrow.png");
-    downArrow->setIcon(ButtonDown);
-
-    QLabel *separator = new QLabel();
-    QLabel *guider = new QLabel("<----------------------------------------------------------------------------------------------------------------------------------------------------->");
-
-    gridLayout->addWidget(link, componentsPos, 0, 1, -1);
-    gridLayout->addWidget(guider, componentsPos, 1, 1, -1);
-    gridLayout->addWidget(upArrow, componentsPos-1, 2, 1, 1, Qt::AlignBottom);
-    gridLayout->addWidget(open, componentsPos, 2, 1, 1);
-    gridLayout->addWidget(downArrow, componentsPos+1, 2, 1, 1, Qt::AlignTop);
-    gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
-
-    componentsPos = componentsPos + 5; 
-  }*/
-  
   QWidget *central = new QWidget();
   QVBoxLayout *mainLayout = new QVBoxLayout();  
 
@@ -156,8 +118,8 @@ void KHUB::create_GroupScreen(bool isCreate) {
     
   mainWindowPtr->setCentralWidget(central);
   
-  //Check to see if group already exists and retrieve its information or start from a new one
-  //We will start with the first option
+  // Check to see if group already exists and retrieve its information or start from a new one
+  // We will start with the first option
   if (isCreate) {
       
   } else {
@@ -335,7 +297,7 @@ void KHUB::handleDispose(int slot) {
 			break;
           
           case (int) ButtonHandler::hl_DisposeBrowser:
-              //Delete tab for closing and set it to NULL for new opening
+              // Delete tab for closing and set it to NULL for new opening
               delete browserTab;
               delete closeBrowser;
               browserTab = NULL;
@@ -350,7 +312,7 @@ void KHUB::handleDispose(int slot) {
 void KHUB::handleLogin() {
   SQL databaseConnection;
 	
-  //DEBUG LOGIN PASS
+  // DEBUG LOGIN PASS
   //if (databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text()))
   user_id = databaseConnection.checkCredentials("victor1234", "gogo");
 	
@@ -423,7 +385,7 @@ void KHUB::handleNewGroup() {
 void KHUB::handleJoinGroup() {
   SQL databaseConnection;
 
-  bool status = databaseConnection.joinGroup(user_id, 29); //debug groupId 29 groupId->text().toInt()
+  bool status = databaseConnection.joinGroup(user_id, 29); // debug groupId 29 groupId->text().toInt()
 
   if (status) {
     QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
@@ -435,26 +397,77 @@ void KHUB::handleJoinGroup() {
   }
 }
 
-// Make a research
-
+// Find references to share
 void KHUB::handleSearch() {
+  //NEED TO FIX LAYOUT OVERWRITE - START FROM HERE
+  if (gridLayout->layout() != NULL) {
+    QLayoutItem* item;
+    while ((item = gridLayout->layout()->takeAt(0)) != NULL) {
+      delete item->widget();
+      delete item;
+    }
+    delete gridLayout->layout();
+  }
+
   HTTP query;
 
-  //Send Request to throw 302 Http error - Moved Page
-  query.sendRequest("chelsea", true);
+  // Send request to throw 302 Http error - Moved Page
+  query.sendRequest(searchEdt->text(), true);
+
+  // Send another to parse references
   query.sendRequest(NULL, false);
+
+  HTTP reader;
+
+  localUrl = reader.readReferences("Main Query Cleaned.txt");
+
+  int componentsPos = 1;
+
+  // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ### FIX THIS
+  for (int pos = 0; pos < localUrl.size(); pos++){
+  QLabel *link = new QLabel();
+  link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>");
+  link->setTextFormat(Qt::RichText);
+  link->setTextInteractionFlags(Qt::TextBrowserInteraction);
+  link->setOpenExternalLinks(true);
+
+  QPushButton *upArrow = new QPushButton();
+  QIcon ButtonUp("Resources/Arrows/arrow.png");
+  upArrow->setIcon(ButtonUp);
+
+  QPushButton *open = new QPushButton("Open");
+  btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, (int) pos, (int) ButtonHandler::hl_OpenUrl);
+
+  QPushButton *downArrow = new QPushButton();
+  QIcon ButtonDown("Resources/Arrows/downarrow.png");
+  downArrow->setIcon(ButtonDown);
+
+  QLabel *separator = new QLabel();
+  QLabel *guider = new QLabel("<----------------------------------------------------------------------------------------------------------------------------------------------------->");
+
+  gridLayout->addWidget(link, componentsPos, 0, 1, -1);
+  gridLayout->addWidget(guider, componentsPos, 1, 1, -1);
+  gridLayout->addWidget(upArrow, componentsPos-1, 2, 1, 1, Qt::AlignBottom);
+  gridLayout->addWidget(open, componentsPos, 2, 1, 1);
+  gridLayout->addWidget(downArrow, componentsPos+1, 2, 1, 1, Qt::AlignTop);
+  gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
+
+  componentsPos = componentsPos + 5;
+  }
+
+  delete searchDialog;
 }
 
 void KHUB::handleUrl(int reference){
     if (browserTab == NULL){
-      signalMapper = new QSignalMapper(this); //##### MEMORY LEAK - FIX THIS
+      signalMapper = new QSignalMapper(this); // ##### MEMORY LEAK - FIX THIS
       newBrowser();
     }
     else {
       delete browserTab;
       newBrowser();
   }
-  //SET HTML reader
+  // SET HTML reader
   QVBoxLayout *webLayout = new QVBoxLayout();
   QWebView *reader = new QWebView();
 
@@ -538,9 +551,9 @@ void KHUB::newBrowser(){
     tabs->setCurrentWidget(browserTab);
 
     closeBrowser = new QPushButton();
-    //Might seems non sense to overload a fucntion with the same parameter but there are cases where they nedd to be different
+    // Might seems non sense to overload a fucntion with the same parameter but there are cases where they nedd to be different
     btSetupInt(&closeBrowser, "x", 0, 0, 25, 25, &KHUB::handleDispose, (int)ButtonHandler::hl_DisposeBrowser, (int)ButtonHandler::hl_DisposeBrowser); 
-    tabs->tabBar()->setTabButton(2, QTabBar::RightSide, closeBrowser); //First argument "2" means tab position
+    tabs->tabBar()->setTabButton(2, QTabBar::RightSide, closeBrowser); // First argument "2" means tab position
 }
     
 

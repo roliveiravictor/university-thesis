@@ -73,7 +73,7 @@ class KHUB : public QMainWindow {
 
  private:
 
-  //Check whether user is grouped or not
+  // Check whether user is grouped or not
   bool isGrouped = false;
 
   Ui::KHUBClass ui;
@@ -94,7 +94,7 @@ class KHUB : public QMainWindow {
   /* Create Screens */
   /******************/
 
-  //Login Screens
+  // Login Screens
   void create_RegisterScreen();
 
   // Main Window Screens
@@ -137,23 +137,23 @@ class KHUB : public QMainWindow {
   /* Main Window Buttons */
   /***********************/
 
-  //Group Buttons
+  // Group Buttons
   QPushButton *createGroupBt, *joinGroupBt;
 
-  //Search Buttons
+  // Search Buttons
   QPushButton *searchBt;
 
-  //General Buttons
+  // General Buttons
   QPushButton *cancelBt;
 	
   /*************************/
   /* Main Window TextField */
   /*************************/
 	
-  //Group TextField
+  // Group TextField
   QLineEdit *groupIdEdt, *groupNameEdt, *groupCategoryEdt, *groupSubjectEdt;
 		
-  //Search Textfield
+  // Search Textfield
   QLineEdit *searchEdt;
 
   /**********************************/
@@ -188,7 +188,7 @@ class KHUB : public QMainWindow {
 
   QVBoxLayout *boxLayout;
 
-  QGridLayout *gridLayout;
+  QGridLayout *gridLayout = NULL;
 
 
   /****************************/

@@ -16,19 +16,19 @@
 
 SQL::SQL() {
   try {
-    //Acquire sql credential
+    // Acquire sql credential
 	databaseAccess();
 
 	QSqlDatabase database = QSqlDatabase::addDatabase("QMYSQL", KHUB_CONNECTION);
 	
-	//Set relevant settings
+	// Set relevant settings
 	database.setHostName(dbAccess[0].data());
 	database.setPort(atoi(dbAccess[1].data()));
 	database.setDatabaseName(dbAccess[2].data());
 	database.setUserName(dbAccess[3].data());
 	database.setPassword(dbAccess[4].data());
 	
-    //Open the database
+    // Open the database
 	if (!database.open()) {
 	  QMessageBox::critical(0, QObject::tr("Database Error"), database.lastError().text());
 	}
@@ -103,10 +103,10 @@ bool SQL::joinGroup(int user_id, int group_id) {
 /* Login Control */
 /*****************/
 
-//Check and confirm login information
+// Check and confirm login information
 int SQL::checkCredentials(QString login, QString password) {
    try {
-	  //Building QSqlQuery object and passing database setup
+	  // Building QSqlQuery object and passing database setup
 	  QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
 	  query.prepare("SELECT user_id FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
@@ -135,7 +135,7 @@ int SQL::checkCredentials(QString login, QString password) {
 	}
 }
 
-//Check if user exists
+// Check if user exists
 bool SQL::checkUser(QString login) {
   QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
@@ -148,7 +148,7 @@ bool SQL::checkUser(QString login) {
     return false;		
 }
 
-//Apply for new user
+// Apply for new user
 bool SQL::registerUser(QString login, QString password) {
   QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
@@ -164,7 +164,7 @@ bool SQL::registerUser(QString login, QString password) {
 /* Local Information  */
 /**********************/
 
-//Open local file and gets credential
+// Open local file and gets credential
 void SQL::databaseAccess() {
   int counter = 0;
   string line;
