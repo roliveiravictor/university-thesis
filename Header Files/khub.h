@@ -188,7 +188,7 @@ class KHUB : public QMainWindow {
 
   QVBoxLayout *boxLayout;
 
-  QGridLayout *gridLayout = NULL;
+  QGridLayout *gridLayout;
 
 
   /****************************/

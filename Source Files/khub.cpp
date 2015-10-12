@@ -17,7 +17,7 @@
 #include "vld.h" // Memory Leak Debug
 
 // Global Pointer to handle main interface changes
-KHUB* mainWindowPtr;
+KHUB *mainWindowPtr;
 
 KHUB::KHUB(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -54,8 +54,8 @@ void KHUB::create_MainScreen(int user_id) {
   delete tb;
 
   // TEST LINE - REMOVE AFTER USE
-  //mainWindowPtr->joinGroup();
-  mainWindowPtr->dialog_Search();
+  mainWindowPtr->joinGroup();
+  //mainWindowPtr->dialog_Search();
 }
 
 void KHUB::create_LoginScreen(KHUB& loginWindow) {
@@ -184,7 +184,7 @@ void KHUB::dialog_Search() {
     searchDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
     searchDialog->setWindowModality(Qt::ApplicationModal);
     searchDialog->setFixedSize(400, 300);
-    searchDialog->setWindowTitle("Serarch");
+    searchDialog->setWindowTitle("Search");
 
     txtFieldBoxSetup(&searchEdt, "Type Keywords to Search", false);
 
@@ -392,6 +392,10 @@ void KHUB::handleJoinGroup() {
     isGrouped = true;
 	delete joinGroupDialog;
     create_GroupScreen(false);
+
+    // TEST LINE - REMOVE AFTER USE
+    mainWindowPtr->dialog_Search();
+
   } else {
 	QMessageBox::critical(0, QObject::tr("Error"), "Could not create a find group to join.");
   }
@@ -400,13 +404,12 @@ void KHUB::handleJoinGroup() {
 // Find references to share
 void KHUB::handleSearch() {
   //NEED TO FIX LAYOUT OVERWRITE - START FROM HERE
-  if (gridLayout->layout() != NULL) {
+  if (gridLayout->layout() != nullptr) {
     QLayoutItem* item;
-    while ((item = gridLayout->layout()->takeAt(0)) != NULL) {
+    while ((item = gridLayout->layout()->takeAt(0)) != nullptr) {
       delete item->widget();
       delete item;
     }
-    delete gridLayout->layout();
   }
 
   HTTP query;
@@ -418,43 +421,41 @@ void KHUB::handleSearch() {
   query.sendRequest(NULL, false);
 
   HTTP reader;
-
   localUrl = reader.readReferences("Main Query Cleaned.txt");
 
   int componentsPos = 1;
 
   // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ### FIX THIS
   for (int pos = 0; pos < localUrl.size(); pos++){
-  QLabel *link = new QLabel();
-  link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>");
-  link->setTextFormat(Qt::RichText);
-  link->setTextInteractionFlags(Qt::TextBrowserInteraction);
-  link->setOpenExternalLinks(true);
+    QLabel *link = new QLabel();
+    link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>");
+    link->setTextFormat(Qt::RichText);
+    link->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    link->setOpenExternalLinks(true);
+  
+    QPushButton *upArrow = new QPushButton();
+    QIcon ButtonUp("Resources/Arrows/arrow.png");
+    upArrow->setIcon(ButtonUp);
 
-  QPushButton *upArrow = new QPushButton();
-  QIcon ButtonUp("Resources/Arrows/arrow.png");
-  upArrow->setIcon(ButtonUp);
+    QPushButton *open = new QPushButton("Open");
+    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, (int) pos, (int) ButtonHandler::hl_OpenUrl);
 
-  QPushButton *open = new QPushButton("Open");
-  btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, (int) pos, (int) ButtonHandler::hl_OpenUrl);
+    QPushButton *downArrow = new QPushButton();
+    QIcon ButtonDown("Resources/Arrows/downarrow.png");
+    downArrow->setIcon(ButtonDown);
 
-  QPushButton *downArrow = new QPushButton();
-  QIcon ButtonDown("Resources/Arrows/downarrow.png");
-  downArrow->setIcon(ButtonDown);
+    QLabel *separator = new QLabel();
+    QLabel *guider = new QLabel("<----------------------------------------------------------------------------------------------------------------------------------------------------->");
+ 
+    gridLayout->addWidget(link, componentsPos, 0, 1, -1);
+    gridLayout->addWidget(guider, componentsPos, 1, 1, -1);
+    gridLayout->addWidget(upArrow, componentsPos - 1, 2, 1, 1, Qt::AlignBottom);
+    gridLayout->addWidget(open, componentsPos, 2, 1, 1);
+    gridLayout->addWidget(downArrow, componentsPos + 1, 2, 1, 1, Qt::AlignTop);
+    gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
 
-  QLabel *separator = new QLabel();
-  QLabel *guider = new QLabel("<----------------------------------------------------------------------------------------------------------------------------------------------------->");
-
-  gridLayout->addWidget(link, componentsPos, 0, 1, -1);
-  gridLayout->addWidget(guider, componentsPos, 1, 1, -1);
-  gridLayout->addWidget(upArrow, componentsPos-1, 2, 1, 1, Qt::AlignBottom);
-  gridLayout->addWidget(open, componentsPos, 2, 1, 1);
-  gridLayout->addWidget(downArrow, componentsPos+1, 2, 1, 1, Qt::AlignTop);
-  gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
-
-  componentsPos = componentsPos + 5;
+    componentsPos = componentsPos + 5;
   }
-
   delete searchDialog;
 }
 
