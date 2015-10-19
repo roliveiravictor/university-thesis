@@ -59,7 +59,7 @@ void KHUB::create_MainScreen(int user_id) {
 }
 
 void KHUB::create_LoginScreen(KHUB& loginWindow) {
-  signalMapper = new QSignalMapper(this);
+  generalMap = new QSignalMapper(this);
 
   loginWindow.setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
   loginWindow.setFixedSize(400, 300);
@@ -69,7 +69,7 @@ void KHUB::create_LoginScreen(KHUB& loginWindow) {
 	
 
   btSetup(&loginBt, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
-  btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, FALSE, (int) ButtonHandler::hl_Register);
+  btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, generalMap, FALSE, (int) ButtonHandler::hl_Register);
 	
   txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
   txtFieldSetup(&passwordEdt, "Password", 115, 150, 200, 25, true);
@@ -84,7 +84,7 @@ void KHUB::create_RegisterScreen() {
   registerBt->close();
 
   btSetup(&cancelRegisterBt, "Cancel", 225, 300, 100, 25, &KHUB::handleReboot);
-  btSetupInt(&registerBt, "Register", 100, 300, 100, 25, &KHUB::handleRegister, TRUE, (int)ButtonHandler::hl_Register);
+  btSetupInt(&registerBt, "Register", 100, 300, 100, 25, &KHUB::handleRegister, generalMap, TRUE, (int)ButtonHandler::hl_Register);
 
   txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
   txtFieldSetup(&loginConfirmEdt, "Confirm Username", 115, 150, 200, 25, false);
@@ -93,12 +93,12 @@ void KHUB::create_RegisterScreen() {
 }
 
 void KHUB::create_GroupScreen(bool isCreate) {
-  signalMapper = new QSignalMapper(this);
+  generalMap = new QSignalMapper(this);
   tabs = new QTabWidget();
 
   gridLayout = new QGridLayout();
   
-  QWidget *localTab = new QWidget();
+  localTab = new QWidget();
   QWidget *sharedTab = new QWidget();
 
   localTab->setLayout(gridLayout);
@@ -136,7 +136,7 @@ void KHUB::dialog_NewGroup() {
   boxLayout = new QVBoxLayout(newGroupDialog);
 
   // Mapper to handle all main screen signals ##### NOT THE BEST SOLUTION - FIX THIS
-  signalMapper = new QSignalMapper(this);
+  generalMap = new QSignalMapper(this);
 
   newGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
   newGroupDialog->setWindowModality(Qt::ApplicationModal);
@@ -158,7 +158,7 @@ void KHUB::dialog_JoinGroup() {
   joinGroupDialog = new QWidget();
   boxLayout = new QVBoxLayout(joinGroupDialog);
 
-  signalMapper = new QSignalMapper(this);
+  generalMap = new QSignalMapper(this);
 
   joinGroupDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
   joinGroupDialog->setWindowModality(Qt::ApplicationModal);
@@ -179,8 +179,8 @@ void KHUB::dialog_Search() {
     searchDialog = new QWidget();
     boxLayout = new QVBoxLayout(searchDialog);
 
-    signalMapper = new QSignalMapper(this);
-
+    generalMap = new QSignalMapper(this);
+ 
     searchDialog->setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
     searchDialog->setWindowModality(Qt::ApplicationModal);
     searchDialog->setFixedSize(400, 300);
@@ -284,27 +284,27 @@ void KHUB::handleReboot() {
 
 void KHUB::handleDispose(int slot) {
   switch (slot) {
-	    case (int) CancelType::cl_newGroup:
-	        delete newGroupDialog;
-			break;
+	case (int) CancelType::cl_newGroup:
+	  delete newGroupDialog;
+	  break;
 
-		  case (int) CancelType::cl_joinGroup:
-		    delete joinGroupDialog;
-			break;
+	case (int) CancelType::cl_joinGroup:
+	  delete joinGroupDialog;
+	  break;
 
-		  case (int) CancelType::cl_search:
-		    delete searchDialog;
-			break;
+	case (int) CancelType::cl_search:
+	  delete searchDialog;
+	  break;
           
-          case (int) ButtonHandler::hl_DisposeBrowser:
-              // Delete tab for closing and set it to NULL for new opening
-              delete browserTab;
-              delete closeBrowser;
-              browserTab = NULL;
-              break;
+    case (int) ButtonHandler::hl_DisposeBrowser:
+      // Delete tab for closing and set it to NULL for new opening
+      delete browserTab;
+      delete closeBrowser;
+      browserTab = NULL;
+      break;
 
-		  default:
-		    qDebug() << "None slot to delete";
+	default:
+	  qDebug() << "None slot to delete";
 	}
 }
 
@@ -331,7 +331,7 @@ void KHUB::handleLogin() {
     }
     create_MainScreen(user_id);	
     loginWindowPtr->close();
-  delete signalMapper;
+  delete generalMap;
   } else {
     QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
   }
@@ -403,7 +403,6 @@ void KHUB::handleJoinGroup() {
 
 // Find references to share
 void KHUB::handleSearch() {
-  //NEED TO FIX LAYOUT OVERWRITE - START FROM HERE
   if (gridLayout->layout() != nullptr) {
     QLayoutItem* item;
     while ((item = gridLayout->layout()->takeAt(0)) != nullptr) {
@@ -425,6 +424,10 @@ void KHUB::handleSearch() {
 
   int componentsPos = 1;
 
+  upVoteMap = new QSignalMapper(this);
+  downVoteMap = new QSignalMapper(this);
+  openMap = new QSignalMapper(this);
+
   // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ### FIX THIS
   for (int pos = 0; pos < localUrl.size(); pos++){
     QLabel *link = new QLabel();
@@ -433,14 +436,16 @@ void KHUB::handleSearch() {
     link->setTextInteractionFlags(Qt::TextBrowserInteraction);
     link->setOpenExternalLinks(true);
   
-    QPushButton *upArrow = new QPushButton();
+    QPushButton *upArrow;
+    btSetupInt(&upArrow, "Up Vote", 225, 300, 100, 25, &KHUB::handleUpVote, upVoteMap, pos, (int)ButtonHandler::hl_UpVote);
     QIcon ButtonUp("Resources/Arrows/arrow.png");
     upArrow->setIcon(ButtonUp);
 
-    QPushButton *open = new QPushButton("Open");
-    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, (int) pos, (int) ButtonHandler::hl_OpenUrl);
+    QPushButton *open;
+    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, openMap, pos, (int) ButtonHandler::hl_OpenUrl);
 
-    QPushButton *downArrow = new QPushButton();
+    QPushButton *downArrow;
+    btSetupInt(&downArrow, "Down Vote", 225, 300, 100, 25, &KHUB::handleDownVote, downVoteMap, pos, (int)ButtonHandler::hl_DownVote);
     QIcon ButtonDown("Resources/Arrows/downarrow.png");
     downArrow->setIcon(ButtonDown);
 
@@ -456,12 +461,13 @@ void KHUB::handleSearch() {
 
     componentsPos = componentsPos + 5;
   }
+  localTab->setFocus();
   delete searchDialog;
 }
 
-void KHUB::handleUrl(int reference){
+void KHUB::handleUrl(int reference) {
+    qDebug() << "Read reference at: " + QString::number(reference);
     if (browserTab == NULL){
-      signalMapper = new QSignalMapper(this); // ##### MEMORY LEAK - FIX THIS
       newBrowser();
     }
     else {
@@ -477,6 +483,24 @@ void KHUB::handleUrl(int reference){
   browserTab->setLayout(webLayout);
 }
 
+void KHUB::handleUpVote(int reference) {
+    qDebug() << "This is my reference for upvoting: " + QString::number(reference);
+    SQL databaseConnection;
+
+    bool status = databaseConnection.upRate(user_id, groupNameEdt->text(), groupCategoryEdt->text(), groupSubjectEdt->text());
+
+    if (status) {
+       
+    }
+    else {
+        QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
+    }
+}
+
+void KHUB::handleDownVote(int reference) { 
+    qDebug() << "This is my reference for DOWNVOTING: " + QString::number(reference);
+}
+
 /**************/
 /* Code Reuse */
 /**************/
@@ -488,23 +512,29 @@ void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY,
   connect(*button, &QPushButton::released, this, fptr);
 }
 
-void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), int value, int handler) {
+void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)(int parameter), QSignalMapper* map, int value, int handler) {
   *button = new QPushButton(name, this);
   (*button)->setGeometry(QRect(QPoint(posX, posY), QSize(width, height)));
 
-  connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
-  signalMapper->setMapping(*button, value);
+  map->setMapping(*button, value);
+  connect(*button, SIGNAL(clicked()), map, SLOT(map()));
 
   switch (handler) {
     case (int) ButtonHandler::hl_Register:
-        connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
-        break;
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
+      break;
+    case (int)ButtonHandler::hl_UpVote:
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleUpVote(int)), Qt::UniqueConnection);
+      break;
     case (int) ButtonHandler::hl_OpenUrl:
-        connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
-        break;
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
+      break;
+    case (int)ButtonHandler::hl_DownVote:
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleDownVote(int)), Qt::UniqueConnection);
+      break;
     case (int) ButtonHandler::hl_DisposeBrowser:
-        connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
-        break;
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
+      break;
     }
 }
 
@@ -519,10 +549,10 @@ void KHUB::btBoxSetupInt(QPushButton **button, const QString name, void (KHUB::*
   *button = new QPushButton(name, this);
 
   boxLayout->addWidget(*button);
-  connect(*button, SIGNAL(clicked()), signalMapper, SLOT(map()));
-  signalMapper->setMapping(*button, slot);
+  connect(*button, SIGNAL(clicked()), generalMap, SLOT(map()));
+  generalMap->setMapping(*button, slot);
 
-  connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
+  connect(generalMap, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
 }
 
 void KHUB::txtFieldSetup(QLineEdit **textField, const QString hint, int posX, int posY, int width, int height, bool isPassword) {
@@ -552,8 +582,8 @@ void KHUB::newBrowser(){
     tabs->setCurrentWidget(browserTab);
 
     closeBrowser = new QPushButton();
-    // Might seems non sense to overload a fucntion with the same parameter but there are cases where they nedd to be different
-    btSetupInt(&closeBrowser, "x", 0, 0, 25, 25, &KHUB::handleDispose, (int)ButtonHandler::hl_DisposeBrowser, (int)ButtonHandler::hl_DisposeBrowser); 
+    // Might seems non sense to overload a fucntion with the same parameter but there are cases where they need to be different - check for other "btSetupInt" lines
+    btSetupInt(&closeBrowser, "x", 0, 0, 25, 25, &KHUB::handleDispose, generalMap,(int) ButtonHandler::hl_DisposeBrowser, (int)ButtonHandler::hl_DisposeBrowser);
     tabs->tabBar()->setTabButton(2, QTabBar::RightSide, closeBrowser); // First argument "2" means tab position
 }
     

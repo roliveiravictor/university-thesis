@@ -47,6 +47,7 @@
 class KHUB : public QMainWindow {
   Q_OBJECT
   Q_ENUMS(CancelType)
+  Q_ENUMS(ButtonHandler)
 
  public:
   KHUB(QWidget *parent = 0);
@@ -60,15 +61,17 @@ class KHUB : public QMainWindow {
   void create_MainScreen(int user_id);
 
 	enum class CancelType {
-      cl_newGroup = 10,
-	  cl_joinGroup = 11,
-	  cl_search = 20,
+      cl_newGroup = 20000,
+	  cl_joinGroup = 20001,
+	  cl_search = 20002,
 	};
 
     enum class ButtonHandler {
-        hl_Register = 1,
-        hl_OpenUrl = 2,
-        hl_DisposeBrowser = 3,
+        hl_Register = 10000,
+        hl_OpenUrl = 10002,
+        hl_DisposeBrowser = 10003,
+        hl_UpVote = 10004,
+        hl_DownVote = 10005,
     };
 
  private:
@@ -110,7 +113,7 @@ class KHUB : public QMainWindow {
 
   QTabWidget *tabs;
 
-  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab = NULL;
+  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab = NULL, *localTab;
 
   /******************/
   /* Create Dialogs */
@@ -180,7 +183,7 @@ class KHUB : public QMainWindow {
   /* General Signal map for different senders */
   /********************************************/
 
-  QSignalMapper *signalMapper;
+  QSignalMapper *generalMap, *upVoteMap, *downVoteMap, *openMap;
 
   /*******************/
   /* General Layouts */
@@ -196,7 +199,7 @@ class KHUB : public QMainWindow {
   /****************************/
 
   void btSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)());
-  void btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), int value, int handler);
+  void btSetupInt(QPushButton **button, const QString name, int posX, int posY, int width, int height, void(KHUB::*fptr)(int parameter), QSignalMapper *map, int value, int handler);
 
   void btBoxSetup(QPushButton **button, const QString name, void (KHUB::*fptr)());
   void btBoxSetupInt(QPushButton **button, const QString name, void (KHUB::*fptr)(int parameter), int slot);
@@ -220,6 +223,8 @@ class KHUB : public QMainWindow {
   void handleLogin();
   void handleRegister(int isRegister);
   void handleUrl(int reference);
+  void handleUpVote(int reference);
+  void handleDownVote(int reference);
 
   /*************************/
   /* Main Window Functions */
