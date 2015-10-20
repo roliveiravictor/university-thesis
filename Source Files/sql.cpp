@@ -33,9 +33,9 @@ SQL::SQL() {
 	  QMessageBox::critical(0, QObject::tr("Database Error"), database.lastError().text());
 	}
   } catch (sql::SQLException &e) {
-	     cout << "# ERR: SQLException in " << __FILE__;
-		 cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-		 cout << "# ERR: " << e.what();
+	     qDebug() << "# ERR: SQLException in " << __FILE__;
+		 qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		 qDebug() << "# ERR: " << e.what();
 
 		 QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 	}
@@ -68,35 +68,76 @@ bool SQL::createGroup(int user_id, QString name, QString category, QString subje
 
 	 return status;
    } catch (sql::SQLException &e) {
-	      cout << "# ERR: SQLException in " << __FILE__;
-	      cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-	      cout << "# ERR: " << e.what();
+	   qDebug() << "# ERR: SQLException in " << __FILE__;
+	   qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	   qDebug() << "# ERR: " << e.what();
 
-	      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+	   QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
-		  return false;
+	   return false;
   }
 }
 
 bool SQL::joinGroup(int user_id, int group_id) {
   try {
-	 QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-	  query.prepare("SELECT * FROM groups where group_id ='" + QString::number(group_id) + "'");
+	query.prepare("SELECT * FROM groups where group_id ='" + QString::number(group_id) + "'");
 
-	  bool status = query.exec();
-	  closeDB(query);
+	bool status = query.exec();
+	closeDB(query);
 
-	  return status;
+	return status;
   } catch (sql::SQLException &e) {
-	     cout << "# ERR: SQLException in " << __FILE__;
-		 cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-		 cout << "# ERR: " << e.what();
+	  qDebug() << "# ERR: SQLException in " << __FILE__;
+	  qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	  qDebug() << "# ERR: " << e.what();
 
-		 QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
-         return false;
-	}
+      return false;
+  }
+}
+
+bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
+  try {
+    bool status;
+
+    QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+
+    query.prepare("SELECT * FROM refs WHERE `ref_hyperlink` ='" + link + "'");
+    query.exec();
+    query.first();
+
+    if (query.size() == 0) {
+      query.prepare("INSERT INTO refs(user_id, group_id, ref_hyperlink) VALUES ('" + QString::number(user_id) + "', '" + QString::number(group_id) + "', '" + link + "')");
+      query.exec();
+      status = linkExe(query, isUpVote, link);
+    } else {
+        status = linkExe(query, isUpVote, link);
+    }
+    closeDB(query);
+
+    return status;
+  }
+  catch (sql::SQLException &e) {
+    qDebug() << "# ERR: SQLException in " << __FILE__;
+    qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    qDebug() << "# ERR: " << e.what();
+    
+    QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+
+    return false;
+  }
+}
+
+bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link){
+  if (isUpVote) {
+    query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` + 1 WHERE `ref_hyperlink` ='" + link + "'");
+  } else {
+      query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` - 1 WHERE `ref_hyperlink` ='" + link + "'");
+    }
+  return query.exec();
 }
 
 /*****************/
@@ -105,34 +146,34 @@ bool SQL::joinGroup(int user_id, int group_id) {
 
 // Check and confirm login information
 int SQL::checkCredentials(QString login, QString password) {
-   try {
-	  // Building QSqlQuery object and passing database setup
-	  QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+  try {
+    // Building QSqlQuery object and passing database setup
+	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
-	  query.prepare("SELECT user_id FROM users where user_name ='" + login + "' AND user_password='" + password + "'");
-	  query.exec();
-	  query.first();
+	query.prepare("SELECT user_id FROM users WHERE user_name ='" + login + "' AND user_password='" + password + "'");
+	query.exec();
+	query.first();
 
-	  if (query.size() != 0) {
-		int user_id = query.value(0).toInt();
+	if (query.size() != 0) {
+	  int user_id = query.value(0).toInt();
 
 	  closeDB(query);
 	  return user_id;
-	  } else {
-		QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
-		closeDB(query);
+	} else {
+	    QMessageBox::critical(0, QObject::tr("Error"), "Your login information was incorret. Please try again.");
+	    closeDB(query);
 
 		return NULL;
-	  }			
-	} catch (sql::SQLException &e) {
-		   cout << "# ERR: SQLException in " << __FILE__;
-		   cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-		   cout << "# ERR: " << e.what();
+	}			
+  } catch (sql::SQLException &e) {
+	  qDebug() << "# ERR: SQLException in " << __FILE__;
+	  qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	  qDebug() << "# ERR: " << e.what();
 
-		   QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
-		   return false;
-	}
+	  return false;
+  }
 }
 
 // Check if user exists
@@ -177,7 +218,7 @@ void SQL::databaseAccess() {
 	}
     configFile.close();
     } else {
-	  cout << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
+	  qDebug() << "Unable to get file (reason: " << strerror(errno) << ")." << endl;
     }
 }
 

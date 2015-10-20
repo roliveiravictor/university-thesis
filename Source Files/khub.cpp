@@ -99,10 +99,10 @@ void KHUB::create_GroupScreen(bool isCreate) {
   gridLayout = new QGridLayout();
   
   localTab = new QWidget();
-  QWidget *sharedTab = new QWidget();
+  sharedTab = new QWidget();
 
   localTab->setLayout(gridLayout);
-
+ 
   QScrollArea *scrollLocal = new QScrollArea();
   scrollLocal->setWidgetResizable(true);
   scrollLocal->setWidget(localTab);
@@ -374,6 +374,7 @@ void KHUB::handleNewGroup() {
 
   if (status) {
 	delete newGroupDialog;
+    isGrouped = true;
 	QMessageBox::information(0, QObject::tr("Success:"), "New group created.");
 	create_GroupScreen(true);
   } else {
@@ -385,7 +386,7 @@ void KHUB::handleNewGroup() {
 void KHUB::handleJoinGroup() {
   SQL databaseConnection;
 
-  bool status = databaseConnection.joinGroup(user_id, 29); // debug groupId 29 groupId->text().toInt()
+  bool status = databaseConnection.joinGroup(user_id, 1); // debug groupId 1 groupId->text().toInt()
 
   if (status) {
     QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
@@ -437,7 +438,7 @@ void KHUB::handleSearch() {
     link->setOpenExternalLinks(true);
   
     QPushButton *upArrow;
-    btSetupInt(&upArrow, "Up Vote", 225, 300, 100, 25, &KHUB::handleUpVote, upVoteMap, pos, (int)ButtonHandler::hl_UpVote);
+    btSetupInt(&upArrow, "", 225, 300, 100, 25, &KHUB::handleUpVote, upVoteMap, pos, (int)ButtonHandler::hl_UpVote);
     QIcon ButtonUp("Resources/Arrows/arrow.png");
     upArrow->setIcon(ButtonUp);
 
@@ -445,7 +446,7 @@ void KHUB::handleSearch() {
     btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, openMap, pos, (int) ButtonHandler::hl_OpenUrl);
 
     QPushButton *downArrow;
-    btSetupInt(&downArrow, "Down Vote", 225, 300, 100, 25, &KHUB::handleDownVote, downVoteMap, pos, (int)ButtonHandler::hl_DownVote);
+    btSetupInt(&downArrow, "", 225, 300, 100, 25, &KHUB::handleDownVote, downVoteMap, pos, (int)ButtonHandler::hl_DownVote);
     QIcon ButtonDown("Resources/Arrows/downarrow.png");
     downArrow->setIcon(ButtonDown);
 
@@ -465,40 +466,39 @@ void KHUB::handleSearch() {
   delete searchDialog;
 }
 
-void KHUB::handleUrl(int reference) {
-    qDebug() << "Read reference at: " + QString::number(reference);
-    if (browserTab == NULL){
-      newBrowser();
-    }
-    else {
-      delete browserTab;
-      newBrowser();
+void KHUB::handleUrl(int referenceID) {
+  if (browserTab == NULL){
+    newBrowser();
+  }
+  else {
+    delete browserTab;
+    newBrowser();
   }
   // SET HTML reader
   QVBoxLayout *webLayout = new QVBoxLayout();
   QWebView *reader = new QWebView();
 
-  reader->load(QUrl(localUrl.at(reference)));
+  reader->load(QUrl(localUrl.at(referenceID)));
   webLayout->addWidget(reader);
   browserTab->setLayout(webLayout);
 }
 
-void KHUB::handleUpVote(int reference) {
-    qDebug() << "This is my reference for upvoting: " + QString::number(reference);
-    SQL databaseConnection;
+void KHUB::handleUpVote(int referenceID) {
+  SQL databaseConnection;
 
-    bool status = databaseConnection.upRate(user_id, groupNameEdt->text(), groupCategoryEdt->text(), groupSubjectEdt->text());
-
-    if (status) {
-       
-    }
-    else {
-        QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
-    }
+  bool status = databaseConnection.rate(user_id, 1, localUrl.at(referenceID), true); // debug groupId 1 - Needs to implement a functionality to return group id
+  if (!status) {
+    QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+  }
 }
 
-void KHUB::handleDownVote(int reference) { 
-    qDebug() << "This is my reference for DOWNVOTING: " + QString::number(reference);
+void KHUB::handleDownVote(int referenceID) {
+    SQL databaseConnection;
+
+    bool status = databaseConnection.rate(user_id, 1, localUrl.at(referenceID), false); // debug groupId 1
+    if (!status) {
+        QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+    }
 }
 
 /**************/

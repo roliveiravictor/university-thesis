@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
 	
   //loginWindow.create_LoginScreen(loginWindow);
   //loginWindow.show();
-  //Debug User ID 9
-  loginWindow.create_MainScreen(9);
+  //Debug User ID 1
+  loginWindow.create_MainScreen(1);
   //loginWindow.show();
 
   //HTTP query;

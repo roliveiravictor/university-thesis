@@ -50,6 +50,7 @@ class SQL {
 
   bool createGroup(int user_id, QString name, QString category, QString subject);
   bool joinGroup(int user_id, int group_id);
+  bool rate(int user_id, int group_id, QString link, bool isUpVote);
 
   /*****************/
   /* Login Control */
@@ -65,6 +66,9 @@ class SQL {
   bool checkUser(QString login);
 
  private:
+  //Verify rate type and update reference value
+  bool linkExe(QSqlQuery query, bool isUpvote, QString link);
+
   // Map to acquire sql credential locally
   map <int, string> dbAccess;
 	

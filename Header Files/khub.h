@@ -53,6 +53,20 @@ class KHUB : public QMainWindow {
   KHUB(QWidget *parent = 0);
   ~KHUB();
 
+  enum class CancelType {
+      cl_newGroup = 20000,
+      cl_joinGroup = 20001,
+      cl_search = 20002,
+  };
+
+  enum class ButtonHandler {
+      hl_Register = 10000,
+      hl_OpenUrl = 10002,
+      hl_DisposeBrowser = 10003,
+      hl_UpVote = 10004,
+      hl_DownVote = 10005,
+  };
+
   /******************/
   /* Create Screens */
   /******************/
@@ -60,21 +74,9 @@ class KHUB : public QMainWindow {
   void create_LoginScreen(KHUB& loginWindow);
   void create_MainScreen(int user_id);
 
-	enum class CancelType {
-      cl_newGroup = 20000,
-	  cl_joinGroup = 20001,
-	  cl_search = 20002,
-	};
-
-    enum class ButtonHandler {
-        hl_Register = 10000,
-        hl_OpenUrl = 10002,
-        hl_DisposeBrowser = 10003,
-        hl_UpVote = 10004,
-        hl_DownVote = 10005,
-    };
-
  private:
+  // Reference to local Urls
+  vector<QString> localUrl;
 
   // Check whether user is grouped or not
   bool isGrouped = false;
@@ -83,9 +85,6 @@ class KHUB : public QMainWindow {
 
   // Reference to global user id
   int user_id;
-
-  // Reference to local Urls
-  vector<QString> localUrl;
 
   /****************/
   /* KHUB Objects */
@@ -113,7 +112,7 @@ class KHUB : public QMainWindow {
 
   QTabWidget *tabs;
 
-  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab = NULL, *localTab;
+  QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab = NULL, *localTab, *sharedTab;
 
   /******************/
   /* Create Dialogs */
@@ -222,9 +221,9 @@ class KHUB : public QMainWindow {
   void handleDispose(int slot);
   void handleLogin();
   void handleRegister(int isRegister);
-  void handleUrl(int reference);
-  void handleUpVote(int reference);
-  void handleDownVote(int reference);
+  void handleUrl(int referenceID);
+  void handleUpVote(int referenceID);
+  void handleDownVote(int referenceID);
 
   /*************************/
   /* Main Window Functions */
