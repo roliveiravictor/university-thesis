@@ -16,6 +16,7 @@
 
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSqlRecord>
 
 // C++ Connect Libraries from MySQL
 #include "mysql_connection.h"
@@ -51,6 +52,7 @@ class SQL {
   bool createGroup(int user_id, QString name, QString category, QString subject);
   bool joinGroup(int user_id, int group_id);
   bool rate(int user_id, int group_id, QString link, bool isUpVote);
+  map<QString, int> loadReferences(int group_id);
 
   /*****************/
   /* Login Control */

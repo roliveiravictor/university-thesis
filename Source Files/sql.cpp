@@ -110,7 +110,7 @@ bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
     query.first();
 
     if (query.size() == 0) {
-      query.prepare("INSERT INTO refs(user_id, group_id, ref_hyperlink) VALUES ('" + QString::number(user_id) + "', '" + QString::number(group_id) + "', '" + link + "')");
+      query.prepare("INSERT INTO refs(user_id, group_id, ref_hyperlink, ref_ratio) VALUES ('" + QString::number(user_id) + "', '" + QString::number(group_id) + "', '" + link + "', '" + QString::number(0) + "')");
       query.exec();
       status = linkExe(query, isUpVote, link);
     } else {
@@ -119,25 +119,53 @@ bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
     closeDB(query);
 
     return status;
-  }
-  catch (sql::SQLException &e) {
-    qDebug() << "# ERR: SQLException in " << __FILE__;
-    qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-    qDebug() << "# ERR: " << e.what();
+  } catch (sql::SQLException &e) {
+      qDebug() << "# ERR: SQLException in " << __FILE__;
+      qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+      qDebug() << "# ERR: " << e.what();
     
-    QSqlDatabase::removeDatabase(KHUB_CONNECTION);
-
-    return false;
+      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+      return false;
   }
 }
 
-bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link){
+//Update rates from voting
+bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link) {
   if (isUpVote) {
     query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` + 1 WHERE `ref_hyperlink` ='" + link + "'");
   } else {
       query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` - 1 WHERE `ref_hyperlink` ='" + link + "'");
     }
   return query.exec();
+}
+
+//Load references for shared tab
+map<QString, int> SQL::loadReferences(int group_id) {
+    try {
+      map<QString, int> data;
+      QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+      query.prepare("SELECT ref_hyperlink, ref_ratio FROM refs WHERE `group_id` ='" + QString::number(group_id) + "'");
+
+      bool status = query.exec();
+      query.first();
+
+      if (status) {
+        while (query.next()){
+          /*According to the SELECT above : 0 is ref_hyperlink - 1 is ref_ratio
+          This way, referecenes only will be considered if they have a positive balance*/
+          if (query.value(1)>0)
+            data[query.value(0).toString()] = query.value(1).toInt();
+        }
+      }
+        QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+        return data;
+      } catch (sql::SQLException &e) {
+          qDebug() << "# ERR: SQLException in " << __FILE__;
+          qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+          qDebug() << "# ERR: " << e.what();
+
+          QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+    }
 }
 
 /*****************/
@@ -147,7 +175,6 @@ bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link){
 // Check and confirm login information
 int SQL::checkCredentials(QString login, QString password) {
   try {
-    // Building QSqlQuery object and passing database setup
 	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
 	query.prepare("SELECT user_id FROM users WHERE user_name ='" + login + "' AND user_password='" + password + "'");

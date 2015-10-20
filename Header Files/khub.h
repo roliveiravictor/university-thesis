@@ -140,7 +140,7 @@ class KHUB : public QMainWindow {
   /***********************/
 
   // Group Buttons
-  QPushButton *createGroupBt, *joinGroupBt;
+  QPushButton *createGroupBt, *joinGroupBt, *upArrow;
 
   // Search Buttons
   QPushButton *searchBt;

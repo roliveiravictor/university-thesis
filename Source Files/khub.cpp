@@ -120,11 +120,14 @@ void KHUB::create_GroupScreen(bool isCreate) {
   
   // Check to see if group already exists and retrieve its information or start from a new one
   // We will start with the first option
-  if (isCreate) {
-      
-  } else {
-      
-  }
+  /*if (!isCreate) {
+      SQL databaseConnection;
+      QSqlRecord data  = databaseConnection.loadReferences(29); //debug group_id 29
+
+      int i;
+      for (i = 0; i < data.count();i++)
+        qDebug() << data.value(i).toString();
+  }*/
 }
 
 /*****************/
@@ -386,7 +389,7 @@ void KHUB::handleNewGroup() {
 void KHUB::handleJoinGroup() {
   SQL databaseConnection;
 
-  bool status = databaseConnection.joinGroup(user_id, 1); // debug groupId 1 groupId->text().toInt()
+  bool status = databaseConnection.joinGroup(user_id, 29); // debug groupId 29 groupId->text().toInt()
 
   if (status) {
     QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
@@ -437,7 +440,7 @@ void KHUB::handleSearch() {
     link->setTextInteractionFlags(Qt::TextBrowserInteraction);
     link->setOpenExternalLinks(true);
   
-    QPushButton *upArrow;
+   // QPushButton *upArrow;
     btSetupInt(&upArrow, "", 225, 300, 100, 25, &KHUB::handleUpVote, upVoteMap, pos, (int)ButtonHandler::hl_UpVote);
     QIcon ButtonUp("Resources/Arrows/arrow.png");
     upArrow->setIcon(ButtonUp);
@@ -486,7 +489,18 @@ void KHUB::handleUrl(int referenceID) {
 void KHUB::handleUpVote(int referenceID) {
   SQL databaseConnection;
 
-  bool status = databaseConnection.rate(user_id, 1, localUrl.at(referenceID), true); // debug groupId 1 - Needs to implement a functionality to return group id
+  bool status = databaseConnection.rate(user_id, 29, localUrl.at(referenceID), true); // debug groupId 29 - Needs to implement a functionality to return group id
+  
+  /*Crashed logic - Trying to implement a color change (green or red) on voted buttons 
+
+  QPushButton *bt;
+  bt = qobject_cast <QPushButton*> (sender());
+  QPalette p(bt->palette());
+  p.setColor(QPalette::Button, QColor("#85FF5C"));
+  bt->setPalette(p);
+
+  update();*/
+
   if (!status) {
     QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
   }
@@ -495,7 +509,7 @@ void KHUB::handleUpVote(int referenceID) {
 void KHUB::handleDownVote(int referenceID) {
     SQL databaseConnection;
 
-    bool status = databaseConnection.rate(user_id, 1, localUrl.at(referenceID), false); // debug groupId 1
+    bool status = databaseConnection.rate(user_id, 29, localUrl.at(referenceID), false); // debug groupId 29
     if (!status) {
         QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
     }

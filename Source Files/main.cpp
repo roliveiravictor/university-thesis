@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
 	
   //loginWindow.create_LoginScreen(loginWindow);
   //loginWindow.show();
-  //Debug User ID 1
-  loginWindow.create_MainScreen(1);
+  //Debug User ID 9
+  loginWindow.create_MainScreen(9);
   //loginWindow.show();
 
   //HTTP query;
@@ -50,6 +50,8 @@ int main(int argc, char *argv[]) {
   //query.sendRequest("dota", true);
   //query.sendRequest(NULL, false);
    
+  //SQL db;
+  //db.loadReferences(29);
 
   return application.exec();
 }
