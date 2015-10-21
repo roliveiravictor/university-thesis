@@ -61,10 +61,11 @@ class KHUB : public QMainWindow {
 
   enum class ButtonHandler {
       hl_Register = 10000,
-      hl_OpenUrl = 10002,
-      hl_DisposeBrowser = 10003,
-      hl_UpVote = 10004,
-      hl_DownVote = 10005,
+      hl_LocalUrl = 10002,
+      hl_SharedUrl = 10003,
+      hl_DisposeBrowser = 10004,
+      hl_UpVote = 10005,
+      hl_DownVote = 10006,
   };
 
   /******************/
@@ -75,15 +76,18 @@ class KHUB : public QMainWindow {
   void create_MainScreen(int user_id);
 
  private:
-  // Reference to local Urls
+  //Reference to local Urls
   vector<QString> localUrl;
 
-  // Check whether user is grouped or not
+  //References to shared Urls
+  map<QString, int> sharedUrl;
+
+  //Check whether user is grouped or not
   bool isGrouped = false;
 
   Ui::KHUBClass ui;
 
-  // Reference to global user id
+  //Reference to global user id
   int user_id;
 
   /****************/
@@ -96,10 +100,10 @@ class KHUB : public QMainWindow {
   /* Create Screens */
   /******************/
 
-  // Login Screens
+  //Login Screens
   void create_RegisterScreen();
 
-  // Main Window Screens
+  //Main Window Screens
   void create_GroupScreen(bool isCreate);
 
   /******************/
@@ -139,23 +143,23 @@ class KHUB : public QMainWindow {
   /* Main Window Buttons */
   /***********************/
 
-  // Group Buttons
+  //Group Buttons
   QPushButton *createGroupBt, *joinGroupBt;
 
-  // Search Buttons
+  //Search Buttons
   QPushButton *searchBt;
 
-  // General Buttons
+  //General Buttons
   QPushButton *cancelBt;
 	
   /*************************/
   /* Main Window TextField */
   /*************************/
 	
-  // Group TextField
+  //Group TextField
   QLineEdit *groupIdEdt, *groupNameEdt, *groupCategoryEdt, *groupSubjectEdt;
 		
-  // Search Textfield
+  //Search Textfield
   QLineEdit *searchEdt;
 
   /**********************************/
@@ -169,20 +173,20 @@ class KHUB : public QMainWindow {
   /* Main Window Actions */
   /***********************/
 
-  // File Actions
+  //File Actions
   QAction *exitAct, *logoutAct;
 
-  // Groups Actions
+  //Groups Actions
   QAction *createGroupAct, *joinGroupAct;
 
-  // Search Actions
+  //Search Actions
   QAction *searchAct;
 
   /********************************************/
   /* General Signal map for different senders */
   /********************************************/
 
-  QSignalMapper *generalMap, *upVoteMap, *downVoteMap, *openMap;
+  QSignalMapper *generalMap, *upVoteMap, *downVoteMap, *localMap, *sharedMap;
 
   /*******************/
   /* General Layouts */
@@ -226,11 +230,11 @@ class KHUB : public QMainWindow {
   /* Main Window Functions */
   /*************************/
 	
-  // File Functions
+  //File Functions
   void exit();
   void logout();
 
-  // Groups  Functions
+  //Groups  Functions
   void createGroup();
   void joinGroup();
   void newBrowser();
@@ -238,11 +242,12 @@ class KHUB : public QMainWindow {
   void handleNewGroup();
   void handleJoinGroup();
 
-  // Search Functions 
+  //Search Functions 
   void search();
 
   void handleSearch();
-  void handleUrl(int referenceID);
+  void handleLocalUrl(int referenceID);
+  void handleSharedUrl(int referenceID);
   void handleUpVote(int referenceID);
   void handleDownVote(int referenceID);
   void handleRefresh();
@@ -250,4 +255,4 @@ class KHUB : public QMainWindow {
   void loadReferences();
 };
 
-#endif // KHUB_H
+#endif //KHUB_H

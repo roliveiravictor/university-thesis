@@ -431,7 +431,7 @@ void KHUB::handleSearch() {
 
   upVoteMap = new QSignalMapper(this);
   downVoteMap = new QSignalMapper(this);
-  openMap = new QSignalMapper(this);
+  localMap = new QSignalMapper(this);
 
   // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   for (int pos = 0; pos < localUrl.size(); pos++){
@@ -448,7 +448,7 @@ void KHUB::handleSearch() {
     upArrow->setIcon(ButtonUp);
 
     QPushButton *open;
-    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleUrl, openMap, pos, (int) ButtonHandler::hl_OpenUrl);
+    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleLocalUrl, localMap, pos, (int) ButtonHandler::hl_LocalUrl);
 
     QPushButton *downArrow;
     btSetupInt(&downArrow, "", 225, 300, 100, 25, &KHUB::handleDownVote, downVoteMap, pos, (int)ButtonHandler::hl_DownVote);
@@ -471,13 +471,12 @@ void KHUB::handleSearch() {
   delete searchDialog;
 }
 
-void KHUB::handleUrl(int referenceID) {
-  if (browserTab == NULL){
+void KHUB::handleLocalUrl(int referenceID) {
+  if (browserTab == NULL) {
     newBrowser();
-  }
-  else {
-    delete browserTab;
-    newBrowser();
+  } else {
+      delete browserTab;
+      newBrowser();
   }
   // SET HTML reader
   QVBoxLayout *webLayout = new QVBoxLayout();
@@ -486,6 +485,32 @@ void KHUB::handleUrl(int referenceID) {
   reader->load(QUrl(localUrl.at(referenceID)));
   webLayout->addWidget(reader);
   browserTab->setLayout(webLayout);
+}
+
+void KHUB::handleSharedUrl(int referenceID) {
+    if (browserTab == NULL) {
+        newBrowser();
+    } else {
+        delete browserTab;
+        newBrowser();
+    }
+    // SET HTML reader
+    QVBoxLayout *webLayout = new QVBoxLayout();
+    QWebView *reader = new QWebView();
+
+    QString url;
+    int i = 0;
+    for (auto u : sharedUrl) {
+      if (i == referenceID) {
+        url = u.first;
+        break;
+      }
+      i++;
+    }
+
+    reader->load(QUrl(url));
+    webLayout->addWidget(reader);
+    browserTab->setLayout(webLayout);
 }
 
 void KHUB::handleUpVote(int referenceID) {
@@ -522,7 +547,7 @@ void KHUB::handleRefresh() {
 }
 
 /**************/
-/* Code Reuse */
+/* Code Recycling */
 /**************/
 
 void KHUB::btSetup(QPushButton **button, const QString name, int posX, int posY, int width, int height, void (KHUB::*fptr)()) {
@@ -546,9 +571,12 @@ void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int po
     case (int)ButtonHandler::hl_UpVote:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleUpVote(int)), Qt::UniqueConnection);
       break;
-    case (int) ButtonHandler::hl_OpenUrl:
+    case (int) ButtonHandler::hl_LocalUrl:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
       break;
+    case (int)ButtonHandler::hl_SharedUrl:
+        connect(map, SIGNAL(mapped(int)), this, SLOT(handleSharedUrl(int)), Qt::UniqueConnection);
+        break;
     case (int)ButtonHandler::hl_DownVote:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleDownVote(int)), Qt::UniqueConnection);
       break;
@@ -617,12 +645,12 @@ void KHUB::loadReferences(){
   }
 
   SQL databaseConnection;
-  map<QString, int> data = databaseConnection.loadReferences(29); //debug group_id 29
-  data.begin();
+  sharedUrl = databaseConnection.loadReferences(29); //debug group_id 29
+  sharedUrl.begin();
 
   // A vector from Labels and QPushButtons needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   int pos = 0;
-  for (auto m : data){
+  for (auto m : sharedUrl){
     QLabel *links = new QLabel();
     links->setText("<a href=\"" + m.first + "\">" + m.first + "</a>");
     links->setTextFormat(Qt::RichText);
@@ -631,7 +659,9 @@ void KHUB::loadReferences(){
 
     QLabel *rates = new QLabel(QString::number(m.second));
 
-    QPushButton *open = new QPushButton("Open");
+    sharedMap = new QSignalMapper(this);
+    QPushButton *open;
+    btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleSharedUrl, sharedMap, pos, (int)ButtonHandler::hl_SharedUrl);
 
     sharedLayout->addWidget(links, pos, 0, 1, -1, Qt::AlignLeft);
     sharedLayout->addWidget(rates, pos, 1, 1, -1, Qt::AlignCenter);

@@ -144,17 +144,17 @@ map<QString, int> SQL::loadReferences(int group_id) {
     try {
       map<QString, int> data;
       QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
-      query.prepare("SELECT ref_hyperlink, ref_ratio FROM refs WHERE `group_id` ='" + QString::number(group_id) + "'");
+      query.prepare("SELECT ref_ratio, ref_hyperlink FROM refs WHERE `group_id` ='" + QString::number(group_id) + "'");
 
       bool status = query.exec();
       query.first();
 
       if (status) {
         while (query.next()){
-          /*According to the SELECT above : 0 is ref_hyperlink - 1 is ref_ratio
+          /*According to the SELECT above : 1 is ref_hyperlink - 0 is ref_ratio
           This way, referecenes only will be considered if they have a positive balance*/
-          if (query.value(1)>0)
-            data[query.value(0).toString()] = query.value(1).toInt();
+          if (query.value(0).toInt()>0)
+            data[query.value(1).toString()] = query.value(0).toInt();
         }
       }
         QSqlDatabase::removeDatabase(KHUB_CONNECTION);
