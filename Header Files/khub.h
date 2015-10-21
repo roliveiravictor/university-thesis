@@ -140,7 +140,7 @@ class KHUB : public QMainWindow {
   /***********************/
 
   // Group Buttons
-  QPushButton *createGroupBt, *joinGroupBt, *upArrow;
+  QPushButton *createGroupBt, *joinGroupBt;
 
   // Search Buttons
   QPushButton *searchBt;
@@ -190,7 +190,7 @@ class KHUB : public QMainWindow {
 
   QVBoxLayout *boxLayout;
 
-  QGridLayout *gridLayout;
+  QGridLayout *localLayout, *sharedLayout;
 
 
   /****************************/
@@ -221,9 +221,6 @@ class KHUB : public QMainWindow {
   void handleDispose(int slot);
   void handleLogin();
   void handleRegister(int isRegister);
-  void handleUrl(int referenceID);
-  void handleUpVote(int referenceID);
-  void handleDownVote(int referenceID);
 
   /*************************/
   /* Main Window Functions */
@@ -245,6 +242,12 @@ class KHUB : public QMainWindow {
   void search();
 
   void handleSearch();
+  void handleUrl(int referenceID);
+  void handleUpVote(int referenceID);
+  void handleDownVote(int referenceID);
+  void handleRefresh();
+
+  void loadReferences();
 };
 
 #endif // KHUB_H

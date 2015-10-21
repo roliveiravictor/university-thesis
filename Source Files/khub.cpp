@@ -96,19 +96,25 @@ void KHUB::create_GroupScreen(bool isCreate) {
   generalMap = new QSignalMapper(this);
   tabs = new QTabWidget();
 
-  gridLayout = new QGridLayout();
+  localLayout = new QGridLayout();
+  sharedLayout = new QGridLayout();
   
   localTab = new QWidget();
   sharedTab = new QWidget();
 
-  localTab->setLayout(gridLayout);
+  localTab->setLayout(localLayout);
+  sharedTab->setLayout(sharedLayout);
  
   QScrollArea *scrollLocal = new QScrollArea();
   scrollLocal->setWidgetResizable(true);
   scrollLocal->setWidget(localTab);
+  
+  QScrollArea *scrollShared = new QScrollArea();
+  scrollShared->setWidgetResizable(true);
+  scrollShared->setWidget(sharedTab);
 
   tabs->addTab(scrollLocal, tr("Local"));
-  tabs->addTab(sharedTab, tr("Shared"));
+  tabs->addTab(scrollShared, tr("Shared"));
   
   QWidget *central = new QWidget();
   QVBoxLayout *mainLayout = new QVBoxLayout();  
@@ -120,14 +126,9 @@ void KHUB::create_GroupScreen(bool isCreate) {
   
   // Check to see if group already exists and retrieve its information or start from a new one
   // We will start with the first option
-  /*if (!isCreate) {
-      SQL databaseConnection;
-      QSqlRecord data  = databaseConnection.loadReferences(29); //debug group_id 29
-
-      int i;
-      for (i = 0; i < data.count();i++)
-        qDebug() << data.value(i).toString();
-  }*/
+  if (!isCreate) {
+    loadReferences();
+  }
 }
 
 /*****************/
@@ -407,9 +408,9 @@ void KHUB::handleJoinGroup() {
 
 // Find references to share
 void KHUB::handleSearch() {
-  if (gridLayout->layout() != nullptr) {
+  if (localLayout->layout() != nullptr) {
     QLayoutItem* item;
-    while ((item = gridLayout->layout()->takeAt(0)) != nullptr) {
+    while ((item = localLayout->layout()->takeAt(0)) != nullptr) {
       delete item->widget();
       delete item;
     }
@@ -432,7 +433,7 @@ void KHUB::handleSearch() {
   downVoteMap = new QSignalMapper(this);
   openMap = new QSignalMapper(this);
 
-  // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ### FIX THIS
+  // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   for (int pos = 0; pos < localUrl.size(); pos++){
     QLabel *link = new QLabel();
     link->setText("<a href=\"" + localUrl.at(pos) + "\">" + localUrl.at(pos) + "</a>");
@@ -441,6 +442,7 @@ void KHUB::handleSearch() {
     link->setOpenExternalLinks(true);
   
    // QPushButton *upArrow;
+    QPushButton *upArrow;
     btSetupInt(&upArrow, "", 225, 300, 100, 25, &KHUB::handleUpVote, upVoteMap, pos, (int)ButtonHandler::hl_UpVote);
     QIcon ButtonUp("Resources/Arrows/arrow.png");
     upArrow->setIcon(ButtonUp);
@@ -456,12 +458,12 @@ void KHUB::handleSearch() {
     QLabel *separator = new QLabel();
     QLabel *guider = new QLabel("<----------------------------------------------------------------------------------------------------------------------------------------------------->");
  
-    gridLayout->addWidget(link, componentsPos, 0, 1, -1);
-    gridLayout->addWidget(guider, componentsPos, 1, 1, -1);
-    gridLayout->addWidget(upArrow, componentsPos - 1, 2, 1, 1, Qt::AlignBottom);
-    gridLayout->addWidget(open, componentsPos, 2, 1, 1);
-    gridLayout->addWidget(downArrow, componentsPos + 1, 2, 1, 1, Qt::AlignTop);
-    gridLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
+    localLayout->addWidget(link, componentsPos, 0, 1, -1);
+    localLayout->addWidget(guider, componentsPos, 1, 1, -1);
+    localLayout->addWidget(upArrow, componentsPos - 1, 2, 1, 1, Qt::AlignBottom);
+    localLayout->addWidget(open, componentsPos, 2, 1, 1);
+    localLayout->addWidget(downArrow, componentsPos + 1, 2, 1, 1, Qt::AlignTop);
+    localLayout->addWidget(separator, componentsPos + 2, 1, 1, 1);
 
     componentsPos = componentsPos + 5;
   }
@@ -513,6 +515,10 @@ void KHUB::handleDownVote(int referenceID) {
     if (!status) {
         QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
     }
+}
+
+void KHUB::handleRefresh() {
+  loadReferences();
 }
 
 /**************/
@@ -601,5 +607,41 @@ void KHUB::newBrowser(){
     tabs->tabBar()->setTabButton(2, QTabBar::RightSide, closeBrowser); // First argument "2" means tab position
 }
     
+void KHUB::loadReferences(){
+  if (sharedLayout->layout() != nullptr) {
+    QLayoutItem* item;
+    while ((item = sharedLayout->layout()->takeAt(0)) != nullptr) {
+      delete item->widget();
+      delete item;
+    }
+  }
 
+  SQL databaseConnection;
+  map<QString, int> data = databaseConnection.loadReferences(29); //debug group_id 29
+  data.begin();
+
+  // A vector from Labels and QPushButtons needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
+  int pos = 0;
+  for (auto m : data){
+    QLabel *links = new QLabel();
+    links->setText("<a href=\"" + m.first + "\">" + m.first + "</a>");
+    links->setTextFormat(Qt::RichText);
+    links->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    links->setOpenExternalLinks(true);
+
+    QLabel *rates = new QLabel(QString::number(m.second));
+
+    QPushButton *open = new QPushButton("Open");
+
+    sharedLayout->addWidget(links, pos, 0, 1, -1, Qt::AlignLeft);
+    sharedLayout->addWidget(rates, pos, 1, 1, -1, Qt::AlignCenter);
+    sharedLayout->addWidget(open, pos, 2, 1, -1, Qt::AlignCenter);
+
+    pos++;
+  }
+
+  QPushButton *refresh;
+  btSetup(&refresh, "Refresh", 225, 300, 100, 25, &KHUB::handleRefresh);
+  sharedLayout->addWidget(refresh, pos, 2, 1, -1, Qt::AlignCenter);
+}
 
