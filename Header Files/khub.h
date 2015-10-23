@@ -76,10 +76,8 @@ class KHUB : public QMainWindow {
   void create_MainScreen(int user_id);
 
  private:
-  //Reference to local Urls
-  vector<QString> localUrl;
+  vector<QString> localUrl, groupData;
 
-  //References to shared Urls
   map<QString, int> sharedUrl;
 
   //Check whether user is grouped or not
@@ -88,7 +86,7 @@ class KHUB : public QMainWindow {
   Ui::KHUBClass ui;
 
   //Reference to global user id
-  int user_id;
+  int user_id, group_id;
 
   /****************/
   /* KHUB Objects */
@@ -107,14 +105,14 @@ class KHUB : public QMainWindow {
   void create_GroupScreen(bool isCreate);
 
   /******************/
-  /* Dialog Objects */
-  /******************/
-
-  /******************/
   /*     Widgets    */
   /******************/
 
   QTabWidget *tabs;
+
+  /******************/
+  /* Dialog Objects */
+  /******************/
 
   QWidget *newGroupDialog, *joinGroupDialog, *searchDialog, *browserTab = NULL, *localTab, *sharedTab;
 
@@ -177,7 +175,7 @@ class KHUB : public QMainWindow {
   QAction *exitAct, *logoutAct;
 
   //Groups Actions
-  QAction *createGroupAct, *joinGroupAct;
+  QAction *createGroupAct, *joinGroupAct, *aboutThisAct;
 
   //Search Actions
   QAction *searchAct;
@@ -237,6 +235,7 @@ class KHUB : public QMainWindow {
   //Groups  Functions
   void createGroup();
   void joinGroup();
+  void aboutThisGroup();
   void newBrowser();
 
   void handleNewGroup();

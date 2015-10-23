@@ -33,11 +33,11 @@ SQL::SQL() {
 	  QMessageBox::critical(0, QObject::tr("Database Error"), database.lastError().text());
 	}
   } catch (sql::SQLException &e) {
-	     qDebug() << "# ERR: SQLException in " << __FILE__;
-		 qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-		 qDebug() << "# ERR: " << e.what();
+	  qDebug() << "# ERR: SQLException in " << __FILE__;
+	  qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	  qDebug() << "# ERR: " << e.what();
 
-		 QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 	}
 }
 
@@ -59,14 +59,19 @@ bool SQL::search(QString keywords) {
 
 bool SQL::createGroup(int user_id, QString name, QString category, QString subject) {
   try {
-     QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+    QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-	 query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
+    groupData.push_back(name);
+    groupData.push_back(category);
+    groupData.push_back(subject);
+
+	query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
 	
-     bool status = query.exec();
-	 closeDB(query);
+    bool status = query.exec();
+	//DB is not being closed here because right after the group is created, he is checked and at SQL::checkGroup the DB is closed
+    //closeDB(query);
 
-	 return status;
+	return status;
    } catch (sql::SQLException &e) {
 	   qDebug() << "# ERR: SQLException in " << __FILE__;
 	   qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
@@ -75,7 +80,7 @@ bool SQL::createGroup(int user_id, QString name, QString category, QString subje
 	   QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
 	   return false;
-  }
+     }
 }
 
 bool SQL::joinGroup(int user_id, int group_id) {
@@ -85,18 +90,19 @@ bool SQL::joinGroup(int user_id, int group_id) {
 	query.prepare("SELECT * FROM groups where group_id ='" + QString::number(group_id) + "'");
 
 	bool status = query.exec();
-	closeDB(query);
+	//closeDB(query);
+    //DB is not being closed here because right someone joins a group, he is checked and at SQL::checkGroup the DB is closed
 
 	return status;
   } catch (sql::SQLException &e) {
-	  qDebug() << "# ERR: SQLException in " << __FILE__;
-	  qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-	  qDebug() << "# ERR: " << e.what();
+      qDebug() << "# ERR: SQLException in " << __FILE__;
+      qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+      qDebug() << "# ERR: " << e.what();
 
-	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
       return false;
-  }
+   }
 }
 
 bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
@@ -105,9 +111,8 @@ bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
 
     QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-    query.prepare("SELECT * FROM refs WHERE `ref_hyperlink` ='" + link + "'");
+    query.prepare("SELECT ref_id FROM refs WHERE `ref_hyperlink` ='" + link + "' AND `group_id`= '" + group_id + "'");
     query.exec();
-    query.first();
 
     if (query.size() == 0) {
       query.prepare("INSERT INTO refs(user_id, group_id, ref_hyperlink, ref_ratio) VALUES ('" + QString::number(user_id) + "', '" + QString::number(group_id) + "', '" + link + "', '" + QString::number(0) + "')");
@@ -126,7 +131,7 @@ bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
     
       QSqlDatabase::removeDatabase(KHUB_CONNECTION);
       return false;
-  }
+    }
 }
 
 //Update rates from voting
@@ -146,26 +151,57 @@ map<QString, int> SQL::loadReferences(int group_id) {
       QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
       query.prepare("SELECT ref_ratio, ref_hyperlink FROM refs WHERE `group_id` ='" + QString::number(group_id) + "'");
 
+//      query.first();
+
       bool status = query.exec();
-      query.first();
-
       if (status) {
-        while (query.next()){
-          /*According to the SELECT above : 1 is ref_hyperlink - 0 is ref_ratio
-          This way, referecenes only will be considered if they have a positive balance*/
-          if (query.value(0).toInt()>0)
-            data[query.value(1).toString()] = query.value(0).toInt();
-        }
-      }
-        QSqlDatabase::removeDatabase(KHUB_CONNECTION);
-        return data;
-      } catch (sql::SQLException &e) {
-          qDebug() << "# ERR: SQLException in " << __FILE__;
-          qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-          qDebug() << "# ERR: " << e.what();
-
-          QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+          while(query.next()) {
+              /*According to the SELECT above : 1 is ref_hyperlink - 0 is ref_ratio
+              This way, referecenes only will be considered if they have a positive balance*/
+              if (query.value(0).toInt()>0)
+                  data[query.value(1).toString()] = query.value(0).toInt();
+              query.next();
+          }
+     }
+     QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+     return data;
+   } catch (sql::SQLException &e) {
+       qDebug() << "# ERR: SQLException in " << __FILE__;
+       qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+       qDebug() << "# ERR: " << e.what();
+       
+       QSqlDatabase::removeDatabase(KHUB_CONNECTION);
     }
+}
+
+vector<QString> SQL::checkGroup(int group_id) {
+  try {
+    QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+    if (!groupData.empty())
+        query.prepare("SELECT group_id FROM groups WHERE `group_name` ='" + groupData.at(0) + "' AND `group_category` ='" + groupData.at(1) + "' AND `group_subject` ='" + groupData.at(2) + "'");
+    else
+        query.prepare("SELECT group_name, group_category, group_subject, group_id FROM groups WHERE `group_id` ='" + QString::number(group_id) + "'");
+
+    bool status = query.exec();
+    query.first();
+
+    if (!groupData.empty())
+        //Get group_id to groupData vector
+        groupData.push_back(query.value(0).toString());
+    else
+      for (int i = 0; i < query.size(); i++)
+          groupData.push_back(query.value(i).toString());
+
+    closeDB(query);
+
+    return groupData;
+  }  catch (sql::SQLException &e) {
+      qDebug() << "# ERR: SQLException in " << __FILE__;
+      qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+      qDebug() << "# ERR: " << e.what();
+
+      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+     }
 }
 
 /*****************/
@@ -175,6 +211,7 @@ map<QString, int> SQL::loadReferences(int group_id) {
 // Check and confirm login information
 int SQL::checkCredentials(QString login, QString password) {
   try {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
 	query.prepare("SELECT user_id FROM users WHERE user_name ='" + login + "' AND user_password='" + password + "'");
@@ -200,7 +237,7 @@ int SQL::checkCredentials(QString login, QString password) {
 	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 
 	  return false;
-  }
+    }
 }
 
 // Check if user exists

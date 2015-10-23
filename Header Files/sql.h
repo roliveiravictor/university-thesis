@@ -52,6 +52,7 @@ class SQL {
   bool createGroup(int user_id, QString name, QString category, QString subject);
   bool joinGroup(int user_id, int group_id);
   bool rate(int user_id, int group_id, QString link, bool isUpVote);
+  vector<QString> checkGroup(int group_id);
   map<QString, int> loadReferences(int group_id);
 
   /*****************/
@@ -68,6 +69,8 @@ class SQL {
   bool checkUser(QString login);
 
  private:
+   vector<QString> groupData;
+
   //Verify rate type and update reference value
   bool linkExe(QSqlQuery query, bool isUpvote, QString link);
 

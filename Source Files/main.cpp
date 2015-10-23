@@ -28,6 +28,8 @@ int main(int argc, char *argv[]) {
   QWebSettings::globalSettings()->setAttribute(QWebSettings::AutoLoadImages, true);
 
   KHUB loginWindow;
+  loginWindow.create_LoginScreen(loginWindow);
+  loginWindow.show();
 
   /* Unit Test implementation to be checked
   Unit Test
@@ -35,23 +37,6 @@ int main(int argc, char *argv[]) {
   test.addTest(loginWindow);
 
   qDebug() << "Overall result: " << (test.runTests() ? "PASS" : "FAIL");*/
-
-
-	
-  //loginWindow.create_LoginScreen(loginWindow);
-  //loginWindow.show();
-  //Debug User ID 9
-  loginWindow.create_MainScreen(9);
-  //loginWindow.show();
-
-  //HTTP query;
-
-  //Send Request to throw 302 Http error - Moved Page
-  //query.sendRequest("dota", true);
-  //query.sendRequest(NULL, false);
-   
-  //SQL db;
-  //db.loadReferences(29);
 
   return application.exec();
 }

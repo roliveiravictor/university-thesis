@@ -52,10 +52,6 @@ void KHUB::create_MainScreen(int user_id) {
   mainWindowPtr->show();
 
   delete tb;
-
-  // TEST LINE - REMOVE AFTER USE
-  mainWindowPtr->joinGroup();
-  //mainWindowPtr->dialog_Search();
 }
 
 void KHUB::create_LoginScreen(KHUB& loginWindow) {
@@ -71,7 +67,7 @@ void KHUB::create_LoginScreen(KHUB& loginWindow) {
   btSetup(&loginBt, "Login", 100, 200, 100, 25, &KHUB::handleLogin);
   btSetupInt(&registerBt, "Register", 225, 200, 100, 25, &KHUB::handleRegister, generalMap, FALSE, (int) ButtonHandler::hl_Register);
 	
-  txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
+  txtFieldSetup(&loginEdt, "FCE Username", 115, 100, 200, 25, false);
   txtFieldSetup(&passwordEdt, "Password", 115, 150, 200, 25, true);
 
   loginWindowPtr = &loginWindow;
@@ -86,7 +82,7 @@ void KHUB::create_RegisterScreen() {
   btSetup(&cancelRegisterBt, "Cancel", 225, 300, 100, 25, &KHUB::handleReboot);
   btSetupInt(&registerBt, "Register", 100, 300, 100, 25, &KHUB::handleRegister, generalMap, TRUE, (int)ButtonHandler::hl_Register);
 
-  txtFieldSetup(&loginEdt, "KHUB Username", 115, 100, 200, 25, false);
+  txtFieldSetup(&loginEdt, "FCE Username", 115, 100, 200, 25, false);
   txtFieldSetup(&loginConfirmEdt, "Confirm Username", 115, 150, 200, 25, false);
   txtFieldSetup(&passwordEdt, "Password", 115, 200, 200, 25, true);
   txtFieldSetup(&passwordConfirmEdt, "Confirm Password", 115, 250, 200, 25, true);
@@ -128,6 +124,11 @@ void KHUB::create_GroupScreen(bool isCreate) {
   // We will start with the first option
   if (!isCreate) {
     loadReferences();
+  } else {
+      //If it's a new group create a refresh button otherwise loadReferences() will do the job
+      QPushButton *refresh;
+      btSetup(&refresh, "Refresh", 225, 300, 100, 25, &KHUB::handleRefresh);
+      sharedLayout->addWidget(refresh, 0, 0, 1, -1, Qt::AlignCenter);
   }
 }
 
@@ -216,6 +217,7 @@ void KHUB::set_Menu() {
   groupsMenu = menuBar()->addMenu(tr("&Groups"));
   groupsMenu->addAction(createGroupAct);
   groupsMenu->addAction(joinGroupAct);
+  groupsMenu->addAction(aboutThisAct);
 
   searchMenu = menuBar()->addMenu(tr("&Search"));
   searchMenu->addAction(searchAct);
@@ -236,9 +238,13 @@ void KHUB::set_Actions() {
   // Groups Actions
   createGroupAct = new QAction(tr("&Create Group"), this);
   joinGroupAct = new QAction(tr("&Join Group"), this);
+  aboutThisAct = new QAction(tr("&About This"), this);
+
+  aboutThisAct->setEnabled(false);
 
   connect(createGroupAct, SIGNAL(triggered()), this, SLOT(createGroup()));
   connect(joinGroupAct, SIGNAL(triggered()), this, SLOT(joinGroup()));
+  connect(aboutThisAct, SIGNAL(triggered()), this, SLOT(aboutThisGroup()));
 
   // Search Actions
   searchAct = new QAction(tr("&Search"), this);
@@ -269,6 +275,20 @@ void KHUB::createGroup() {
 
 void KHUB::joinGroup() {
   dialog_JoinGroup();
+}
+
+void KHUB::aboutThisGroup() {
+  switch (groupData.size()) {
+    case 1:
+      QMessageBox::information(0, QObject::tr("About this group: "), "Group ID: " + QString::number(group_id) + "\nGroup Name: " + groupData.at(0) + "\nGroup Category: Not Specified \nGroup Subject: Not Specified");
+      break;
+    case 2:
+      QMessageBox::information(0, QObject::tr("About this group: "), "Group ID: " + QString::number(group_id) + "\nGroup Name: " + groupData.at(0) + "\nGroup Category: " + groupData.at(1) + "\nGroup Subject: Not Specified");
+      break;
+    default:
+      QMessageBox::information(0, QObject::tr("About this group: "), "Group ID: " + QString::number(group_id) + "\nGroup Name: " + groupData.at(0) + "\nGroup Category: " + groupData.at(1) + "\nGroup Subject: " + groupData.at(2));
+      break;
+  }
 }
 
 // Search Functions
@@ -316,29 +336,27 @@ void KHUB::handleDispose(int slot) {
 void KHUB::handleLogin() {
   SQL databaseConnection;
 	
-  // DEBUG LOGIN PASS
-  //if (databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text()))
-  user_id = databaseConnection.checkCredentials("victor1234", "gogo");
-	
-  if (user_id != NULL) {
-	// Cleean Heap
-	delete loginEdt;
-	delete passwordEdt;
-	delete loginBt;
+  user_id = databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text());
 
-    // Check if any registration was created before clearing heap
-    if (registerBt == NULL) {
-	  delete loginConfirmEdt;
-	  delete passwordConfirmEdt;
-	  delete registerBt;
-	  delete cancelRegisterBt;
-    }
-    create_MainScreen(user_id);	
-    loginWindowPtr->close();
-  delete generalMap;
+  if (user_id != NULL) {
+      // Cleean Heap
+      delete loginEdt;
+      delete passwordEdt;
+      delete loginBt;
+
+      // Check if any registration was created before clearing heap
+      if (registerBt == NULL) {
+          delete loginConfirmEdt;
+          delete passwordConfirmEdt;
+          delete registerBt;
+          delete cancelRegisterBt;
+      }
+      create_MainScreen(user_id);
+      loginWindowPtr->close();
+      delete generalMap;
   } else {
-    QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
-  }
+      QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
+    }
 }
 
 // Handle register for screen opening or new user 
@@ -378,11 +396,17 @@ void KHUB::handleNewGroup() {
 
   if (status) {
 	delete newGroupDialog;
+    QMessageBox::information(0, QObject::tr("Success:"), "New group created.");
+
+    //Gather group information
+    groupData = databaseConnection.checkGroup(group_id);
+    group_id = groupData.at(3).toInt();
+
     isGrouped = true;
-	QMessageBox::information(0, QObject::tr("Success:"), "New group created.");
+    aboutThisAct->setEnabled(true);
 	create_GroupScreen(true);
   } else {
-    QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
+      QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
   }
 }
 
@@ -390,17 +414,17 @@ void KHUB::handleNewGroup() {
 void KHUB::handleJoinGroup() {
   SQL databaseConnection;
 
-  bool status = databaseConnection.joinGroup(user_id, 29); // debug groupId 29 groupId->text().toInt()
+  group_id = groupIdEdt->text().toInt();
+  bool status = databaseConnection.joinGroup(user_id, group_id);
+  groupData = databaseConnection.checkGroup(group_id);
 
   if (status) {
+    delete joinGroupDialog;
     QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
+    
     isGrouped = true;
-	delete joinGroupDialog;
+	aboutThisAct->setEnabled(true);
     create_GroupScreen(false);
-
-    // TEST LINE - REMOVE AFTER USE
-    mainWindowPtr->dialog_Search();
-
   } else {
 	QMessageBox::critical(0, QObject::tr("Error"), "Could not create a find group to join.");
   }
@@ -494,6 +518,7 @@ void KHUB::handleSharedUrl(int referenceID) {
         delete browserTab;
         newBrowser();
     }
+    
     // SET HTML reader
     QVBoxLayout *webLayout = new QVBoxLayout();
     QWebView *reader = new QWebView();
@@ -516,7 +541,7 @@ void KHUB::handleSharedUrl(int referenceID) {
 void KHUB::handleUpVote(int referenceID) {
   SQL databaseConnection;
 
-  bool status = databaseConnection.rate(user_id, 29, localUrl.at(referenceID), true); // debug groupId 29 - Needs to implement a functionality to return group id
+  bool status = databaseConnection.rate(user_id, group_id, localUrl.at(referenceID), true); 
   
   /*Crashed logic - Trying to implement a color change (green or red) on voted buttons 
 
@@ -536,7 +561,7 @@ void KHUB::handleUpVote(int referenceID) {
 void KHUB::handleDownVote(int referenceID) {
     SQL databaseConnection;
 
-    bool status = databaseConnection.rate(user_id, 29, localUrl.at(referenceID), false); // debug groupId 29
+    bool status = databaseConnection.rate(user_id, group_id, localUrl.at(referenceID), false);
     if (!status) {
         QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
     }
@@ -572,7 +597,7 @@ void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int po
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleUpVote(int)), Qt::UniqueConnection);
       break;
     case (int) ButtonHandler::hl_LocalUrl:
-      connect(map, SIGNAL(mapped(int)), this, SLOT(handleUrl(int)), Qt::UniqueConnection);
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleLocalUrl(int)), Qt::UniqueConnection);
       break;
     case (int)ButtonHandler::hl_SharedUrl:
         connect(map, SIGNAL(mapped(int)), this, SLOT(handleSharedUrl(int)), Qt::UniqueConnection);
@@ -626,7 +651,7 @@ void KHUB::txtFieldBoxSetup(QLineEdit **textField, const QString hint, bool isPa
 
 void KHUB::newBrowser(){
     browserTab = new QWidget();
-    tabs->addTab(browserTab, tr("Navegador"));
+    tabs->addTab(browserTab, tr("Browser"));
     tabs->setCurrentWidget(browserTab);
 
     closeBrowser = new QPushButton();
@@ -645,19 +670,19 @@ void KHUB::loadReferences(){
   }
 
   SQL databaseConnection;
-  sharedUrl = databaseConnection.loadReferences(29); //debug group_id 29
+  sharedUrl = databaseConnection.loadReferences(group_id);
   sharedUrl.begin();
 
   // A vector from Labels and QPushButtons needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   int pos = 0;
-  for (auto m : sharedUrl){
+  for (auto m : sharedUrl) {
     QLabel *links = new QLabel();
     links->setText("<a href=\"" + m.first + "\">" + m.first + "</a>");
     links->setTextFormat(Qt::RichText);
     links->setTextInteractionFlags(Qt::TextBrowserInteraction);
     links->setOpenExternalLinks(true);
 
-    QLabel *rates = new QLabel(QString::number(m.second));
+    QLabel *rates = new QLabel("Ratio: " + QString::number(m.second));
 
     sharedMap = new QSignalMapper(this);
     QPushButton *open;
@@ -669,7 +694,6 @@ void KHUB::loadReferences(){
 
     pos++;
   }
-
   QPushButton *refresh;
   btSetup(&refresh, "Refresh", 225, 300, 100, 25, &KHUB::handleRefresh);
   sharedLayout->addWidget(refresh, pos, 2, 1, -1, Qt::AlignCenter);
