@@ -59,6 +59,7 @@ void KHUB::create_LoginScreen(KHUB& loginWindow) {
 
   loginWindow.setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) &~Qt::WindowMaximizeButtonHint);
   loginWindow.setFixedSize(400, 300);
+  loginWindow.setWindowTitle("FCE");
 
   QToolBar* tb = loginWindow.findChild<QToolBar *>();
   loginWindow.removeToolBar(tb);
@@ -122,14 +123,10 @@ void KHUB::create_GroupScreen(bool isCreate) {
   
   // Check to see if group already exists and retrieve its information or start from a new one
   // We will start with the first option
-  if (!isCreate) {
+  if (!isCreate)
     loadReferences();
-  } else {
-      //If it's a new group create a refresh button otherwise loadReferences() will do the job
-      QPushButton *refresh;
-      btSetup(&refresh, "Refresh", 225, 300, 100, 25, &KHUB::handleRefresh);
-      sharedLayout->addWidget(refresh, 0, 0, 1, -1, Qt::AlignCenter);
-  }
+
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
 /*****************/
@@ -334,6 +331,7 @@ void KHUB::handleDispose(int slot) {
 
 // Close login screen if credentials are good to go and free resources
 void KHUB::handleLogin() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   SQL databaseConnection;
 	
   user_id = databaseConnection.checkCredentials(loginEdt->text(), passwordEdt->text());
@@ -357,6 +355,7 @@ void KHUB::handleLogin() {
   } else {
       QMessageBox::warning(0, QObject::tr("Warning"), "Username or password incorrect. Please try again.");
     }
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
 // Handle register for screen opening or new user 
@@ -390,13 +389,13 @@ void KHUB::handleRegister(int isRegister) {
 
 // Create new group to share knowledge
 void KHUB::handleNewGroup() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   SQL databaseConnection;
 
   bool status = databaseConnection.createGroup(user_id, groupNameEdt->text(), groupCategoryEdt->text(), groupSubjectEdt->text());
 
   if (status) {
 	delete newGroupDialog;
-    QMessageBox::information(0, QObject::tr("Success:"), "New group created.");
 
     //Gather group information
     groupData = databaseConnection.checkGroup(group_id);
@@ -408,10 +407,12 @@ void KHUB::handleNewGroup() {
   } else {
       QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
   }
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
 // Find new group to join
 void KHUB::handleJoinGroup() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   SQL databaseConnection;
 
   group_id = groupIdEdt->text().toInt();
@@ -420,8 +421,7 @@ void KHUB::handleJoinGroup() {
 
   if (status) {
     delete joinGroupDialog;
-    QMessageBox::information(0, QObject::tr("Joined:"), "Welcome!");
-    
+
     isGrouped = true;
 	aboutThisAct->setEnabled(true);
     create_GroupScreen(false);
@@ -453,8 +453,8 @@ void KHUB::handleSearch() {
 
   int componentsPos = 1;
 
-  upVoteMap = new QSignalMapper(this);
-  downVoteMap = new QSignalMapper(this);
+  upLocalMap = new QSignalMapper(this);
+  downLocalMap = new QSignalMapper(this);
   localMap = new QSignalMapper(this);
 
   // A vector from Buttons and Labels needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
@@ -465,9 +465,8 @@ void KHUB::handleSearch() {
     link->setTextInteractionFlags(Qt::TextBrowserInteraction);
     link->setOpenExternalLinks(true);
   
-   // QPushButton *upArrow;
     QPushButton *upArrow;
-    btSetupInt(&upArrow, "", 225, 300, 100, 25, &KHUB::handleUpVote, upVoteMap, pos, (int)ButtonHandler::hl_UpVote);
+    btSetupInt(&upArrow, "", 225, 300, 100, 25, &KHUB::handleLocalUpVote, upLocalMap, pos, (int)ButtonHandler::hl_UpLocalVote);
     QIcon ButtonUp("Resources/Arrows/arrow.png");
     upArrow->setIcon(ButtonUp);
 
@@ -475,7 +474,7 @@ void KHUB::handleSearch() {
     btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleLocalUrl, localMap, pos, (int) ButtonHandler::hl_LocalUrl);
 
     QPushButton *downArrow;
-    btSetupInt(&downArrow, "", 225, 300, 100, 25, &KHUB::handleDownVote, downVoteMap, pos, (int)ButtonHandler::hl_DownVote);
+    btSetupInt(&downArrow, "", 225, 300, 100, 25, &KHUB::handleLocalDownVote, downLocalMap, pos, (int)ButtonHandler::hl_DownLocalVote);
     QIcon ButtonDown("Resources/Arrows/downarrow.png");
     downArrow->setIcon(ButtonDown);
 
@@ -491,8 +490,8 @@ void KHUB::handleSearch() {
 
     componentsPos = componentsPos + 5;
   }
-  localTab->setFocus();
   delete searchDialog;
+  localTab->setFocus();
 }
 
 void KHUB::handleLocalUrl(int referenceID) {
@@ -538,10 +537,12 @@ void KHUB::handleSharedUrl(int referenceID) {
     browserTab->setLayout(webLayout);
 }
 
-void KHUB::handleUpVote(int referenceID) {
+void KHUB::handleLocalUpVote(int referenceID) {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  
   SQL databaseConnection;
 
-  bool status = databaseConnection.rate(user_id, group_id, localUrl.at(referenceID), true); 
+  bool status = databaseConnection.rate(group_id, localUrl.at(referenceID), true); 
   
   /*Crashed logic - Trying to implement a color change (green or red) on voted buttons 
 
@@ -554,21 +555,76 @@ void KHUB::handleUpVote(int referenceID) {
   update();*/
 
   if (!status) {
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
     QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+  } else {
+      loadReferences();
   }
+
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
-void KHUB::handleDownVote(int referenceID) {
+void KHUB::handleSharedUpVote(int referenceID) {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    
     SQL databaseConnection;
 
-    bool status = databaseConnection.rate(user_id, group_id, localUrl.at(referenceID), false);
-    if (!status) {
-        QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+    QString url;
+    int i = 0;
+    for (auto u : sharedUrl) {
+        if (i == referenceID) {
+            url = u.first;
+            break;
+        }
+        i++;
     }
+    bool status = databaseConnection.rate(group_id, url, true);
+    if (!status) {
+      QApplication::setOverrideCursor(Qt::ArrowCursor);
+      QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+    } else {
+        loadReferences();
+    }
+
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
-void KHUB::handleRefresh() {
-  loadReferences();
+
+void KHUB::handleLocalDownVote(int referenceID) {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  SQL databaseConnection;
+
+  bool status = databaseConnection.rate(group_id, localUrl.at(referenceID), false);
+  if (!status) {
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
+    QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+  } else {
+      loadReferences();
+  }
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
+}
+
+void KHUB::handleSharedDownVote(int referenceID) {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  SQL databaseConnection;
+
+  QString url;
+  int i = 0;
+  for (auto u : sharedUrl) {
+      if (i == referenceID) {
+          url = u.first;
+          break;
+      }
+      i++;
+  }
+  bool status = databaseConnection.rate(group_id, url, false);
+  if (!status) {
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
+    QMessageBox::critical(0, QObject::tr("Error"), "Could not rate this reference.");
+  } else {
+      loadReferences();
+  }
+  QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
 /**************/
@@ -593,18 +649,24 @@ void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int po
     case (int) ButtonHandler::hl_Register:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleRegister(int)), Qt::UniqueConnection);
       break;
-    case (int)ButtonHandler::hl_UpVote:
-      connect(map, SIGNAL(mapped(int)), this, SLOT(handleUpVote(int)), Qt::UniqueConnection);
+    case (int)ButtonHandler::hl_UpLocalVote:
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleLocalUpVote(int)), Qt::UniqueConnection);
       break;
+    case (int)ButtonHandler::hl_UpSharedVote:
+        connect(map, SIGNAL(mapped(int)), this, SLOT(handleSharedUpVote(int)), Qt::UniqueConnection);
+        break;
     case (int) ButtonHandler::hl_LocalUrl:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleLocalUrl(int)), Qt::UniqueConnection);
       break;
     case (int)ButtonHandler::hl_SharedUrl:
         connect(map, SIGNAL(mapped(int)), this, SLOT(handleSharedUrl(int)), Qt::UniqueConnection);
         break;
-    case (int)ButtonHandler::hl_DownVote:
-      connect(map, SIGNAL(mapped(int)), this, SLOT(handleDownVote(int)), Qt::UniqueConnection);
-      break;
+    case (int)ButtonHandler::hl_DownLocalVote:
+      connect(map, SIGNAL(mapped(int)), this, SLOT(handleLocalDownVote(int)), Qt::UniqueConnection);
+      break;    
+    case (int)ButtonHandler::hl_DownSharedVote:
+        connect(map, SIGNAL(mapped(int)), this, SLOT(handleSharedDownVote(int)), Qt::UniqueConnection);
+        break;
     case (int) ButtonHandler::hl_DisposeBrowser:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
       break;
@@ -661,20 +723,25 @@ void KHUB::newBrowser(){
 }
     
 void KHUB::loadReferences(){
-  if (sharedLayout->layout() != nullptr) {
-    QLayoutItem* item;
-    while ((item = sharedLayout->layout()->takeAt(0)) != nullptr) {
-      delete item->widget();
-      delete item;
+    if (sharedLayout->layout() != nullptr) {
+        QLayoutItem* item;
+        while ((item = sharedLayout->layout()->takeAt(0)) != nullptr) {
+            delete item->widget();
+            delete item;
+        }
     }
-  }
-
+  
   SQL databaseConnection;
   sharedUrl = databaseConnection.loadReferences(group_id);
   sharedUrl.begin();
 
+  upSharedMap = new QSignalMapper(this);
+  downSharedMap = new QSignalMapper(this);
+  sharedMap = new QSignalMapper(this);
+
   // A vector from Labels and QPushButtons needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   int pos = 0;
+  int componentPos = 1;
   for (auto m : sharedUrl) {
     QLabel *links = new QLabel();
     links->setText("<a href=\"" + m.first + "\">" + m.first + "</a>");
@@ -684,18 +751,28 @@ void KHUB::loadReferences(){
 
     QLabel *rates = new QLabel("Ratio: " + QString::number(m.second));
 
-    sharedMap = new QSignalMapper(this);
+    QPushButton *upArrow;
+    btSetupInt(&upArrow, "", 225, 300, 100, 25, &KHUB::handleSharedUpVote, upSharedMap, pos, (int)ButtonHandler::hl_UpSharedVote);
+    QIcon ButtonUp("Resources/Arrows/arrow.png");
+    upArrow->setIcon(ButtonUp);
+
     QPushButton *open;
     btSetupInt(&open, "Open", 225, 300, 100, 25, &KHUB::handleSharedUrl, sharedMap, pos, (int)ButtonHandler::hl_SharedUrl);
 
-    sharedLayout->addWidget(links, pos, 0, 1, -1, Qt::AlignLeft);
-    sharedLayout->addWidget(rates, pos, 1, 1, -1, Qt::AlignCenter);
-    sharedLayout->addWidget(open, pos, 2, 1, -1, Qt::AlignCenter);
+    QPushButton *downArrow;
+    btSetupInt(&downArrow, "", 225, 300, 100, 25, &KHUB::handleSharedDownVote, downSharedMap, pos, (int)ButtonHandler::hl_DownSharedVote);
+    QIcon ButtonDown("Resources/Arrows/downarrow.png");
+    downArrow->setIcon(ButtonDown);
 
+    sharedLayout->addWidget(links, componentPos, 0, 1, -1, Qt::AlignLeft);
+    sharedLayout->addWidget(rates, componentPos, 1, 1, -1, Qt::AlignLeft);
+    sharedLayout->addWidget(upArrow, componentPos - 1, 2, 1, -1, Qt::AlignBottom);
+    sharedLayout->addWidget(open, componentPos, 2, 1, -1, Qt::AlignCenter);
+    sharedLayout->addWidget(downArrow, componentPos + 1, 2, 1, -1, Qt::AlignTop);
+
+    componentPos = componentPos + 5;
     pos++;
   }
-  QPushButton *refresh;
-  btSetup(&refresh, "Refresh", 225, 300, 100, 25, &KHUB::handleRefresh);
-  sharedLayout->addWidget(refresh, pos, 2, 1, -1, Qt::AlignCenter);
+  sharedTab->setFocus();
 }
 

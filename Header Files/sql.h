@@ -51,7 +51,7 @@ class SQL {
 
   bool createGroup(int user_id, QString name, QString category, QString subject);
   bool joinGroup(int user_id, int group_id);
-  bool rate(int user_id, int group_id, QString link, bool isUpVote);
+  bool rate(int group_id, QString link, bool isUpVote);
   vector<QString> checkGroup(int group_id);
   map<QString, int> loadReferences(int group_id);
 
@@ -72,7 +72,7 @@ class SQL {
    vector<QString> groupData;
 
   //Verify rate type and update reference value
-  bool linkExe(QSqlQuery query, bool isUpvote, QString link);
+  bool linkExe(QSqlQuery query, bool isUpvote, QString link, int group_id);
 
   // Map to acquire sql credential locally
   map <int, string> dbAccess;

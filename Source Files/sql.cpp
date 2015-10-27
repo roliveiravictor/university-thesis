@@ -66,7 +66,7 @@ bool SQL::createGroup(int user_id, QString name, QString category, QString subje
     groupData.push_back(subject);
 
 	query.prepare("INSERT INTO groups(user_id, group_name, group_category, group_subject) VALUES ('" + QString::number(user_id) + "', '" + name + "', '" + category + "', '" + subject + "')");
-	
+    
     bool status = query.exec();
 	//DB is not being closed here because right after the group is created, he is checked and at SQL::checkGroup the DB is closed
     //closeDB(query);
@@ -87,7 +87,7 @@ bool SQL::joinGroup(int user_id, int group_id) {
   try {
 	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-	query.prepare("SELECT * FROM groups where group_id ='" + QString::number(group_id) + "'");
+	query.prepare("SELECT * FROM groups WHERE group_id ='" + QString::number(group_id) + "'");
 
 	bool status = query.exec();
 	//closeDB(query);
@@ -105,21 +105,21 @@ bool SQL::joinGroup(int user_id, int group_id) {
    }
 }
 
-bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
+bool SQL::rate(int group_id, QString link, bool isUpVote) {
   try {
     bool status;
 
     QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 
-    query.prepare("SELECT ref_id FROM refs WHERE `ref_hyperlink` ='" + link + "' AND `group_id`= '" + group_id + "'");
+    query.prepare("SELECT ref_id FROM refs WHERE `ref_hyperlink` = '" + link + "' AND `group_id` = '" + QString::number(group_id) + "'");
     query.exec();
 
     if (query.size() == 0) {
-      query.prepare("INSERT INTO refs(user_id, group_id, ref_hyperlink, ref_ratio) VALUES ('" + QString::number(user_id) + "', '" + QString::number(group_id) + "', '" + link + "', '" + QString::number(0) + "')");
+      query.prepare("INSERT INTO refs(group_id, ref_hyperlink, ref_ratio) VALUES ('" + QString::number(group_id) + "', '" + link + "', '" + QString::number(0) + "')");
       query.exec();
-      status = linkExe(query, isUpVote, link);
+      status = linkExe(query, isUpVote, link, group_id);
     } else {
-        status = linkExe(query, isUpVote, link);
+        status = linkExe(query, isUpVote, link, group_id);
     }
     closeDB(query);
 
@@ -135,11 +135,11 @@ bool SQL::rate(int user_id, int group_id, QString link, bool isUpVote) {
 }
 
 //Update rates from voting
-bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link) {
+bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link, int group_id) {
   if (isUpVote) {
-    query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` + 1 WHERE `ref_hyperlink` ='" + link + "'");
+      query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` + 1 WHERE `ref_hyperlink` ='" + link + "' AND `group_id` = '" + QString::number(group_id) + "'");
   } else {
-      query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` - 1 WHERE `ref_hyperlink` ='" + link + "'");
+      query.prepare("UPDATE refs SET `ref_ratio` = `ref_ratio` - 1 WHERE `ref_hyperlink` ='" + link + "' AND `group_id` = '" + QString::number(group_id) + "'");
     }
   return query.exec();
 }
@@ -151,17 +151,14 @@ map<QString, int> SQL::loadReferences(int group_id) {
       QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
       query.prepare("SELECT ref_ratio, ref_hyperlink FROM refs WHERE `group_id` ='" + QString::number(group_id) + "'");
 
-//      query.first();
-
       bool status = query.exec();
       if (status) {
-          while(query.next()) {
-              /*According to the SELECT above : 1 is ref_hyperlink - 0 is ref_ratio
-              This way, referecenes only will be considered if they have a positive balance*/
-              if (query.value(0).toInt()>0)
-                  data[query.value(1).toString()] = query.value(0).toInt();
-              query.next();
-          }
+        while(query.next()) {
+          /*According to the SELECT above : 1 is ref_hyperlink - 0 is ref_ratio
+          This way, referecenes only will be considered if they have a positive balance*/
+          if (query.value(0).toInt()>0)
+            data[query.value(1).toString()] = query.value(0).toInt();
+        }
      }
      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
      return data;
@@ -211,7 +208,6 @@ vector<QString> SQL::checkGroup(int group_id) {
 // Check and confirm login information
 int SQL::checkCredentials(QString login, QString password) {
   try {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
 	QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
 		
 	query.prepare("SELECT user_id FROM users WHERE user_name ='" + login + "' AND user_password='" + password + "'");

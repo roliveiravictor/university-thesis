@@ -64,8 +64,10 @@ class KHUB : public QMainWindow {
       hl_LocalUrl = 10002,
       hl_SharedUrl = 10003,
       hl_DisposeBrowser = 10004,
-      hl_UpVote = 10005,
-      hl_DownVote = 10006,
+      hl_UpLocalVote = 10005,
+      hl_DownLocalVote = 10006,
+      hl_UpSharedVote = 10007,
+      hl_DownSharedVote = 10008,
   };
 
   /******************/
@@ -184,7 +186,7 @@ class KHUB : public QMainWindow {
   /* General Signal map for different senders */
   /********************************************/
 
-  QSignalMapper *generalMap, *upVoteMap, *downVoteMap, *localMap, *sharedMap;
+  QSignalMapper *generalMap, *upLocalMap, *downLocalMap, *upSharedMap, *downSharedMap, *localMap, *sharedMap;
 
   /*******************/
   /* General Layouts */
@@ -247,9 +249,10 @@ class KHUB : public QMainWindow {
   void handleSearch();
   void handleLocalUrl(int referenceID);
   void handleSharedUrl(int referenceID);
-  void handleUpVote(int referenceID);
-  void handleDownVote(int referenceID);
-  void handleRefresh();
+  void handleLocalUpVote(int referenceID);
+  void handleSharedUpVote(int referenceID);
+  void handleLocalDownVote(int referenceID);
+  void handleSharedDownVote(int referenceID);
 
   void loadReferences();
 };
