@@ -53,7 +53,7 @@ class SQL {
   bool joinGroup(int user_id, int group_id);
   bool rate(int group_id, QString link, bool isUpVote);
   vector<QString> checkGroup(int group_id);
-  map<QString, int> loadReferences(int group_id);
+  vector<pair<QString, int>> loadReferences(int group_id);
 
   /*****************/
   /* Login Control */

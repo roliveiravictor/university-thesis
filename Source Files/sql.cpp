@@ -145,21 +145,23 @@ bool SQL::linkExe(QSqlQuery query, bool isUpVote, QString link, int group_id) {
 }
 
 //Load references for shared tab
-map<QString, int> SQL::loadReferences(int group_id) {
+vector<pair<QString, int>> SQL::loadReferences(int group_id) {
     try {
-      map<QString, int> data;
+      vector<pair<QString, int>> data;
       QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
-      query.prepare("SELECT ref_ratio, ref_hyperlink FROM refs WHERE `group_id` ='" + QString::number(group_id) + "'");
+      query.prepare("SELECT ref_ratio, ref_hyperlink FROM refs WHERE `group_id` ='" + QString::number(group_id) + "' ORDER BY ref_ratio DESC");
 
       bool status = query.exec();
       if (status) {
         while(query.next()) {
           /*According to the SELECT above : 1 is ref_hyperlink - 0 is ref_ratio
           This way, referecenes only will be considered if they have a positive balance*/
-          if (query.value(0).toInt()>0)
-            data[query.value(1).toString()] = query.value(0).toInt();
+            if (query.value(0).toInt() > 0)
+                //data[query.value(1).toString()] = query.value(0).toInt();
+                data.push_back(make_pair(query.value(1).toString(), query.value(0).toInt()));
         }
      }
+
      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
      return data;
    } catch (sql::SQLException &e) {

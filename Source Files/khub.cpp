@@ -407,7 +407,6 @@ void KHUB::handleNewGroup() {
   } else {
       QMessageBox::critical(0, QObject::tr("Error"), "Could not create a new group.");
   }
-  QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
 // Find new group to join
@@ -524,7 +523,7 @@ void KHUB::handleSharedUrl(int referenceID) {
 
     QString url;
     int i = 0;
-    for (auto u : sharedUrl) {
+    for (auto u : sharedContent) {
       if (i == referenceID) {
         url = u.first;
         break;
@@ -571,7 +570,7 @@ void KHUB::handleSharedUpVote(int referenceID) {
 
     QString url;
     int i = 0;
-    for (auto u : sharedUrl) {
+    for (auto u : sharedContent) {
         if (i == referenceID) {
             url = u.first;
             break;
@@ -610,7 +609,7 @@ void KHUB::handleSharedDownVote(int referenceID) {
 
   QString url;
   int i = 0;
-  for (auto u : sharedUrl) {
+  for (auto u : sharedContent) {
       if (i == referenceID) {
           url = u.first;
           break;
@@ -723,17 +722,16 @@ void KHUB::newBrowser(){
 }
     
 void KHUB::loadReferences(){
-    if (sharedLayout->layout() != nullptr) {
-        QLayoutItem* item;
-        while ((item = sharedLayout->layout()->takeAt(0)) != nullptr) {
-            delete item->widget();
-            delete item;
-        }
+  if (sharedLayout->layout() != nullptr) {
+    QLayoutItem* item;
+    while ((item = sharedLayout->layout()->takeAt(0)) != nullptr) {
+      delete item->widget();
+      delete item;
     }
+  }
   
   SQL databaseConnection;
-  sharedUrl = databaseConnection.loadReferences(group_id);
-  sharedUrl.begin();
+  sharedContent = databaseConnection.loadReferences(group_id);
 
   upSharedMap = new QSignalMapper(this);
   downSharedMap = new QSignalMapper(this);
@@ -742,7 +740,7 @@ void KHUB::loadReferences(){
   // A vector from Labels and QPushButtons needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   int pos = 0;
   int componentPos = 1;
-  for (auto m : sharedUrl) {
+  for (auto m : sharedContent) {
     QLabel *links = new QLabel();
     links->setText("<a href=\"" + m.first + "\">" + m.first + "</a>");
     links->setTextFormat(Qt::RichText);

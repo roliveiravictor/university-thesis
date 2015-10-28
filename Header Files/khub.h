@@ -80,7 +80,7 @@ class KHUB : public QMainWindow {
  private:
   vector<QString> localUrl, groupData;
 
-  map<QString, int> sharedUrl;
+  vector<pair<QString, int>> sharedContent;
 
   //Check whether user is grouped or not
   bool isGrouped = false;
