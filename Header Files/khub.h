@@ -68,6 +68,7 @@ class KHUB : public QMainWindow {
       hl_DownLocalVote = 10006,
       hl_UpSharedVote = 10007,
       hl_DownSharedVote = 10008,
+      hl_Exclusion = 10009,
   };
 
   /******************/
@@ -83,7 +84,7 @@ class KHUB : public QMainWindow {
   vector<pair<QString, int>> sharedContent;
 
   //Check whether user is grouped or not
-  bool isGrouped = false;
+  bool isGrouped = false, isGroupAdmin;
 
   Ui::KHUBClass ui;
 
@@ -186,7 +187,7 @@ class KHUB : public QMainWindow {
   /* General Signal map for different senders */
   /********************************************/
 
-  QSignalMapper *generalMap, *upLocalMap, *downLocalMap, *upSharedMap, *downSharedMap, *localMap, *sharedMap;
+  QSignalMapper *generalMap, *upLocalMap, *downLocalMap, *upSharedMap, *downSharedMap, *localMap, *sharedMap, *exclusionMap;
 
   /*******************/
   /* General Layouts */
@@ -253,6 +254,7 @@ class KHUB : public QMainWindow {
   void handleSharedUpVote(int referenceID);
   void handleLocalDownVote(int referenceID);
   void handleSharedDownVote(int referenceID);
+  void handleExclusion(int referenceID);
 
   void loadReferences();
 };

@@ -33,24 +33,12 @@ SQL::SQL() {
 	  QMessageBox::critical(0, QObject::tr("Database Error"), database.lastError().text());
 	}
   } catch (sql::SQLException &e) {
-	  qDebug() << "# ERR: SQLException in " << __FILE__;
-	  qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-	  qDebug() << "# ERR: " << e.what();
-
-	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+      throwSQLError(&e);
 	}
 }
 
 SQL::~SQL() {
 
-}
-
-/******************/
-/* Search Control */
-/******************/
-
-bool SQL::search(QString keywords) {
-  return NULL;
 }
 
 /*****************/
@@ -73,12 +61,7 @@ bool SQL::createGroup(int user_id, QString name, QString category, QString subje
 
 	return status;
    } catch (sql::SQLException &e) {
-	   qDebug() << "# ERR: SQLException in " << __FILE__;
-	   qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-	   qDebug() << "# ERR: " << e.what();
-
-	   QSqlDatabase::removeDatabase(KHUB_CONNECTION);
-
+       throwSQLError(&e);
 	   return false;
      }
 }
@@ -95,12 +78,7 @@ bool SQL::joinGroup(int user_id, int group_id) {
 
 	return status;
   } catch (sql::SQLException &e) {
-      qDebug() << "# ERR: SQLException in " << __FILE__;
-      qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-      qDebug() << "# ERR: " << e.what();
-
-      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
-
+      throwSQLError(&e);
       return false;
    }
 }
@@ -125,11 +103,7 @@ bool SQL::rate(int group_id, QString link, bool isUpVote) {
 
     return status;
   } catch (sql::SQLException &e) {
-      qDebug() << "# ERR: SQLException in " << __FILE__;
-      qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-      qDebug() << "# ERR: " << e.what();
-    
-      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+      throwSQLError(&e);
       return false;
     }
 }
@@ -165,21 +139,18 @@ vector<pair<QString, int>> SQL::loadReferences(int group_id) {
      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
      return data;
    } catch (sql::SQLException &e) {
-       qDebug() << "# ERR: SQLException in " << __FILE__;
-       qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-       qDebug() << "# ERR: " << e.what();
-       
-       QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+       throwSQLError(&e);
     }
 }
 
+//Gather group information for "About This" menu
 vector<QString> SQL::checkGroup(int group_id) {
   try {
     QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
     if (!groupData.empty())
         query.prepare("SELECT group_id FROM groups WHERE `group_name` ='" + groupData.at(0) + "' AND `group_category` ='" + groupData.at(1) + "' AND `group_subject` ='" + groupData.at(2) + "'");
     else
-        query.prepare("SELECT group_name, group_category, group_subject, group_id FROM groups WHERE `group_id` ='" + QString::number(group_id) + "'");
+        query.prepare("SELECT group_name, group_category, group_subject, group_id, user_id FROM groups WHERE `group_id` ='" + QString::number(group_id) + "'");
 
     bool status = query.exec();
     query.first();
@@ -188,19 +159,30 @@ vector<QString> SQL::checkGroup(int group_id) {
         //Get group_id to groupData vector
         groupData.push_back(query.value(0).toString());
     else
-      for (int i = 0; i < query.size(); i++)
+      for (int i = 0; i < 5; i++) // 5 - means number of columns on SELECT line 153
           groupData.push_back(query.value(i).toString());
 
     closeDB(query);
 
     return groupData;
-  }  catch (sql::SQLException &e) {
-      qDebug() << "# ERR: SQLException in " << __FILE__;
-      qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-      qDebug() << "# ERR: " << e.what();
-
-      QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+  } catch (sql::SQLException &e) {
+      throwSQLError(&e);
      }
+}
+
+bool SQL::exclude(int group_id, QString link) {
+  try {
+    QSqlQuery query(QSqlDatabase::database(KHUB_CONNECTION));
+  
+    query.prepare("DELETE FROM refs WHERE `group_id` = '" + QString::number(group_id) + "' AND `ref_hyperlink` ='" + link + "'");
+    bool status = query.exec();
+    
+    closeDB(query);
+
+    return status;
+  } catch (sql::SQLException &e) {
+      throwSQLError(&e);
+    }
 }
 
 /*****************/
@@ -228,12 +210,7 @@ int SQL::checkCredentials(QString login, QString password) {
 		return NULL;
 	}			
   } catch (sql::SQLException &e) {
-	  qDebug() << "# ERR: SQLException in " << __FILE__;
-	  qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-	  qDebug() << "# ERR: " << e.what();
-
-	  QSqlDatabase::removeDatabase(KHUB_CONNECTION);
-
+      throwSQLError(&e);
 	  return false;
     }
 }
@@ -284,9 +261,21 @@ void SQL::databaseAccess() {
     }
 }
 
+/**********************/
+/*     Code Reuse     */
+/**********************/
+
 void SQL::closeDB(QSqlQuery query) {
   query.clear();
   QSqlDatabase::removeDatabase(KHUB_CONNECTION);
+}
+
+void SQL::throwSQLError(sql::SQLException *e) {
+    qDebug() << "# ERR: SQLException in " << __FILE__;
+    qDebug() << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+    qDebug() << "# ERR: " << e->what();
+
+    QSqlDatabase::removeDatabase(KHUB_CONNECTION);
 }
 
 

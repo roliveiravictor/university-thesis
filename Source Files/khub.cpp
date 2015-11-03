@@ -402,6 +402,7 @@ void KHUB::handleNewGroup() {
     group_id = groupData.at(3).toInt();
 
     isGrouped = true;
+    isGroupAdmin = true;
     aboutThisAct->setEnabled(true);
 	create_GroupScreen(true);
   } else {
@@ -417,6 +418,11 @@ void KHUB::handleJoinGroup() {
   group_id = groupIdEdt->text().toInt();
   bool status = databaseConnection.joinGroup(user_id, group_id);
   groupData = databaseConnection.checkGroup(group_id);
+
+  if (groupData.at(4).toInt() == user_id)
+      isGroupAdmin = true;
+  else
+      isGroupAdmin = false;
 
   if (status) {
     delete joinGroupDialog;
@@ -626,6 +632,32 @@ void KHUB::handleSharedDownVote(int referenceID) {
   QApplication::setOverrideCursor(Qt::ArrowCursor);
 }
 
+void KHUB::handleExclusion(int referenceID) {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    SQL databaseConnection;
+
+    QString url;
+    int i = 0;
+    for (auto u : sharedContent) {
+        if (i == referenceID) {
+            url = u.first;
+            break;
+        }
+        i++;
+    }
+    bool status = databaseConnection.exclude(group_id, url);
+    if (!status) {
+        QApplication::setOverrideCursor(Qt::ArrowCursor);
+        QMessageBox::critical(0, QObject::tr("Error"), "Could not exclude this reference.");
+    }
+    else {
+        loadReferences();
+    }
+
+    QApplication::setOverrideCursor(Qt::ArrowCursor);
+}
+
 /**************/
 /* Code Recycling */
 /**************/
@@ -665,6 +697,9 @@ void KHUB::btSetupInt(QPushButton **button, const QString name, int posX, int po
       break;    
     case (int)ButtonHandler::hl_DownSharedVote:
         connect(map, SIGNAL(mapped(int)), this, SLOT(handleSharedDownVote(int)), Qt::UniqueConnection);
+        break;
+    case (int)ButtonHandler::hl_Exclusion:
+        connect(map, SIGNAL(mapped(int)), this, SLOT(handleExclusion(int)), Qt::UniqueConnection);
         break;
     case (int) ButtonHandler::hl_DisposeBrowser:
       connect(map, SIGNAL(mapped(int)), this, SLOT(handleDispose(int)), Qt::UniqueConnection);
@@ -736,6 +771,7 @@ void KHUB::loadReferences(){
   upSharedMap = new QSignalMapper(this);
   downSharedMap = new QSignalMapper(this);
   sharedMap = new QSignalMapper(this);
+  exclusionMap = new QSignalMapper(this);
 
   // A vector from Labels and QPushButtons needs to be implemented here to avoid memory leak - It will be needed to clean this vector every time the user demands a search ou join/create a group### FIX THIS
   int pos = 0;
@@ -765,9 +801,17 @@ void KHUB::loadReferences(){
     sharedLayout->addWidget(links, componentPos, 0, 1, -1, Qt::AlignLeft);
     sharedLayout->addWidget(rates, componentPos, 1, 1, -1, Qt::AlignLeft);
     sharedLayout->addWidget(upArrow, componentPos - 1, 2, 1, -1, Qt::AlignBottom);
-    sharedLayout->addWidget(open, componentPos, 2, 1, -1, Qt::AlignCenter);
     sharedLayout->addWidget(downArrow, componentPos + 1, 2, 1, -1, Qt::AlignTop);
 
+    if (isGroupAdmin) {
+      QPushButton *exclude;
+      btSetupInt(&exclude, "Exclude", 225, 300, 100, 25, &KHUB::handleExclusion, exclusionMap, pos, (int)ButtonHandler::hl_Exclusion);
+      sharedLayout->addWidget(exclude, componentPos, 3, 1, -1, Qt::AlignRight);
+      //Adjusment design for Open Button
+      sharedLayout->addWidget(open, componentPos, 2, 1, -1, Qt::AlignLeft);
+    } else {
+        sharedLayout->addWidget(open, componentPos, 2, 1, -1, Qt::AlignCenter);
+    }
     componentPos = componentPos + 5;
     pos++;
   }
