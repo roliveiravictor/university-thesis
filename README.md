@@ -6,7 +6,7 @@ Those are the codes I've built for my thesis at Salvador University (UNIFACS). T
 
 ### What is this repository for? ###
 
-* Codes for my Thesis developed during my bachelor degree in Computer Engineering - Final Version [Deprecated Project]
+* Codes for my Thesis developed during my bachelor degree in Computer Engineering - Final Version [Deprecated Project - 03/11/2015]
 
 ### How do I get set up? ###
 
