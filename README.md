@@ -13,7 +13,7 @@ KHUB's usability synopsis:
 
 ### What is this repository for? ###
 
-* Codes for my Thesis developed during my bachelor degree in Computer Engineering - Final Version [Deprecated Project - 03/11/2015]
+* Codes for my Thesis developed during my bachelor degree in Computer Engineering - Final Version
 
 ### How do I get set up? ###
 
